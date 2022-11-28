@@ -3,10 +3,10 @@ main: server.o client.o exception.o account.o
 	gcc -o client client.o exception.o account.o
 
 server.o:
-	gcc -c server.c
+	gcc -c client_server/server.c
 
 client.o:
-	gcc -c client.c
+	gcc -c client_server/client.c
 
 exception.o:
 	gcc -c exception/exception.c

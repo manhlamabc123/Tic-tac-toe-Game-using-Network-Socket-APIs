@@ -6,8 +6,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h> // read(), write(), close()
-#include "exception/exception.h"
-#include "account/account.h"
+#include "../exception/exception.h"
+#include "../account/account.h"
 #define BUFFER_SIZE 1024
 #define PORT 8080
 

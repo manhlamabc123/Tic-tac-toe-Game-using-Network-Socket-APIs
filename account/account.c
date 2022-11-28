@@ -151,7 +151,7 @@ Account *register_account(Account *acc)
 
 void update_file(Account *acc)
 {
-    FILE *inp = fopen("nguoidung.txt", "w+");
+    FILE *inp = fopen("data/nguoidung.txt", "w+");
     if(inp==NULL){
         printf("Cannot open file.\n");
         return;
