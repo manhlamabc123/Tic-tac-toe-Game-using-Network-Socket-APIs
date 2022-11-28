@@ -99,7 +99,7 @@ Account *read_account(Account *acc)
     char homepage[100];
     int status;
     number_of_account = 0;
-    FILE *inp = fopen("nguoidung.txt", "r");
+    FILE *inp = fopen("data/nguoidung.txt", "r");
     if (!inp)
     {
         printf("Error: Can't open this file! \n");

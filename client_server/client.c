@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
 #include "../exception/exception.h"
+#include "../helper/helper.h"
 #define BUFFER_SIZE 1024
 #define PORT 8080
 
@@ -45,8 +46,8 @@ void func(int sockfd)
 		}
 	goal1:
 		printf("Password: ");
-		if (fgets(password, sizeof(username), stdin) == NULL)
-			break;
+			if (fgets(password, sizeof(username), stdin) == NULL)
+				break;
 
 		// Check for '\n' input
 		if (strcmp(username, "\n") == 0 && strcmp(password, "\n") == 0)
@@ -73,66 +74,21 @@ void func(int sockfd)
 		switch (atoi(sign_in_feedback))
 		{
 		case 0:
-			printf("OK.\n");
+			printf("Signed in successfully.\n");
 			printf("------------------\n");
-		goal2:
-			printf("Do you want to change password or sign out?(y/n/bye): ");
-			if (fgets(choice, BUFFER_SIZE, stdin) == NULL)
+			switch (menu())
+			{
+			case 1:
+				printf("Choice: Tutorial\n");
 				break;
-
-			if (choice[0] != 121 && choice[0] != 110 && !(strcmp(choice, bye) == 0))
-			{
-				printf("Wrong input. Only y or n.\n");
-				goto goal2;
-			}
-
-			if (choice[0] == 121)
-			{
-			goal3:
-				printf("New password: ");
-				if (fgets(new_password, BUFFER_SIZE, stdin) == NULL)
-					break;
-
-				// Check new_password
-				if (check_new_password(new_password))
-				{
-					printf("Can only contains number or letter. Try again please.\n");
-					goto goal3;
-				}
-			goal4:
-				printf("Confirm password: ");
-				if (fgets(confirm_password, BUFFER_SIZE, stdin) == NULL)
-					break;
-
-				// Check confirm_password
-				if (check_confirm_password(confirm_password, new_password))
-				{
-					goto goal4;
-				}
-
-				write(sockfd, confirm_password, sizeof(confirm_password));
-				read(sockfd, buffer, BUFFER_SIZE);
-				read(sockfd, only_number, BUFFER_SIZE);
-				read(sockfd, only_string, BUFFER_SIZE);
-				if (atoi(buffer) == 0)
-				{
-					printf("Encoded password: %s %s\n", only_number, only_string);
-					printf("Change password successfully.\n");
-				}
-			}
-			else if (choice[0] == 110)
-			{
-				char request[2] = "0";
-				write(sockfd, request, strlen(request));
-			}
-			else
-			{
-				write(sockfd, sign_out_request, strlen(sign_out_request));
-				read(sockfd, buffer, BUFFER_SIZE);
-				if (strcmp(sign_out_request, buffer) == 0)
-				{
-					printf("Sign out successfully.\n");
-				}
+			case 2:
+				printf("Choice: Play\n");
+				break;
+			case 3:
+				printf("Choice: Log out\n");
+				break;
+			default:
+				break;
 			}
 			break;
 		case 1:
@@ -142,10 +98,10 @@ void func(int sockfd)
 			printf("Account is not ready.\n");
 			break;
 		case 3:
-			printf("Not OK.\n");
+			printf("Wrong password.\n");
 			break;
 		case 4:
-			printf("Not OK. Account is blocked.\n");
+			printf("Wrong password. Account is blocked.\n");
 			break;
 		default:
 			break;
