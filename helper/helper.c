@@ -2,10 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include "helper.h"
+#include "../exception/exception.h"
+#define BUFFER_SIZE 1024
 
 int menu()
 {
-    char user_choice[1024];
+    char user_choice[BUFFER_SIZE];
     int choice;
 
     printf("----------MENU----------\n");
@@ -17,7 +19,7 @@ goal:
     if (fgets(user_choice, sizeof(user_choice), stdin) == NULL)
     {
         printf("Input error.\n");
-        return -1;
+        return 0;
     }
 
     // Check input
@@ -37,4 +39,27 @@ goal:
     }
 
     return choice;
+}
+
+char welcome()
+{
+    char user_choice[BUFFER_SIZE];
+
+    printf("---------Welcome-----------\n");
+    printf("Do you have an account?(y/n/bye): ");
+goal:
+    if (fgets(user_choice, sizeof(user_choice), stdin) == NULL)
+    {
+        printf("Input error.\n");
+        return 0;
+    }
+
+    // Check input
+    if (check_yes_no_bye(user_choice))
+    {
+        printf("Invalid choice. Again please: ");
+        goto goal;
+    }
+
+    return user_choice[0];
 }

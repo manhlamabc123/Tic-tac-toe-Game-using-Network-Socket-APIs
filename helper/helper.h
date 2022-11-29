@@ -1,1 +1,2 @@
 int menu();
+char welcome();

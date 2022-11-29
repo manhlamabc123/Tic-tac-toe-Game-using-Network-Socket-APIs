@@ -26,6 +26,21 @@ void func(int sockfd)
 	char only_string[BUFFER_SIZE];
 	char sign_out_request[100] = "bye\0";
 
+	switch (welcome())
+	{
+	case 'y':
+		break;
+	case 'n':
+		printf("This is sign in option.\n");
+		// sign_in();
+		break;
+	case 'b':
+		return;
+	default:
+		printf("Program error.\n");
+		return;
+	}
+
 	for (;;)
 	{
 	goal0:
@@ -124,7 +139,7 @@ int main(int argc, char *argv[])
 	char *port_number = argv[2];
 	int port = atoi(port_number);
 	int sockfd, connfd;
-	struct sockaddr_in servaddr, cli;
+	struct sockaddr_in servaddr;
 
 	// Check if address valid
 	if (inet_addr(ip_address) == -1)
