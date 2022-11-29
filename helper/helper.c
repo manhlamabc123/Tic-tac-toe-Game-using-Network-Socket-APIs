@@ -63,3 +63,29 @@ goal:
 
     return user_choice[0];
 }
+
+int exit()
+{
+    char user_choice[BUFFER_SIZE];
+
+    printf("-------------Exit----------\n");
+    printf("Do you really really want to exit?(y/n): ");
+goal:
+    if (fgets(user_choice, sizeof(user_choice), stdin) == NULL)
+    {
+        printf("Input error.\n");
+        return 0;
+    }
+
+    // Check input
+    if (check_yes_no(user_choice))
+    {
+        printf("Invalid choice. Again please: ");
+        goto goal;
+    }
+
+    if (user_choice[0] == 'y')
+        return 1;
+    else
+        return 0;
+}

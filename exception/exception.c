@@ -75,3 +75,16 @@ int check_yes_no_bye(char *string)
     }
     return 0;
 }
+
+int check_yes_no(char *string)
+{
+    standardize_input(string, BUFFER_SIZE);
+
+    if (strlen(string) > 2)
+        return 1;
+
+    if (string[0] != 'y' && string[0] != 'n')
+        return 1;
+
+    return 0;
+}

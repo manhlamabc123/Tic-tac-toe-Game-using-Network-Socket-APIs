@@ -1,2 +1,3 @@
-int menu();
 char welcome();
+int menu();
+int exit();
