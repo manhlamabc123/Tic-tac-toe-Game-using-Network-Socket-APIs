@@ -11,7 +11,7 @@
 #define BUFFER_SIZE 1024
 #define PORT 8080
 
-void func(int sockfd)
+void func(int socket_fd)
 {
 	char username[BUFFER_SIZE];
 	char password[BUFFER_SIZE];
@@ -69,7 +69,7 @@ void func(int sockfd)
 		{
 			printf("Exit Program.\n");
 			char exit_program[100] = "exit_program\0";
-			write(sockfd, exit_program, strlen(exit_program));
+			write(socket_fd, exit_program, strlen(exit_program));
 			break;
 		}
 
@@ -81,11 +81,11 @@ void func(int sockfd)
 		}
 
 		// Send username & password to server
-		write(sockfd, username, sizeof(username));
-		write(sockfd, password, sizeof(password));
+		write(socket_fd, username, sizeof(username));
+		write(socket_fd, password, sizeof(password));
 
 		// Sign in response
-		read(sockfd, sign_in_feedback, BUFFER_SIZE);
+		read(socket_fd, sign_in_feedback, BUFFER_SIZE);
 		switch (atoi(sign_in_feedback))
 		{
 		case 0:
@@ -131,58 +131,64 @@ int main(int argc, char *argv[])
 	// Check input
 	if (argc != 3)
 	{
-		printf("Please input IP address and Port number\n");
+		printf("[-]Please input IP address and Port number\n");
 		return 0;
 	}
 
+	// Variables
 	char *ip_address = argv[1];
 	char *port_number = argv[2];
 	int port = atoi(port_number);
-	int sockfd, connfd;
-	struct sockaddr_in servaddr;
+	int socket_fd;
+	struct sockaddr_in server_address;
 
 	// Check if address valid
 	if (inet_addr(ip_address) == -1)
 	{
-		printf("Invalid IP address.\n");
+		printf("[-]Invalid IP address\n");
 		return 0;
 	}
 
 	// Check if port valid
 	if (port < 1 || port > 65535)
 	{
-		printf("Invalid port.\n");
+		printf("[-]Invalid port\n");
 		return 0;
 	}
 
 	// socket create and verification
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd == -1)
+	socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (socket_fd == -1)
 	{
-		printf("socket creation failed...\n");
+		printf("[-]Socket creation failed\n");
 		exit(0);
 	}
 	else
-		printf("Socket successfully created..\n");
-	bzero(&servaddr, sizeof(servaddr));
+		printf("[+]Socket successfully created\n");
 
-	// assign IP, PORT
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = inet_addr(ip_address);
-	servaddr.sin_port = htons(port);
+	// Clear server_address
+	bzero(&server_address, sizeof(server_address));
 
-	// connect the client socket to server socket
-	if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) != 0)
+	// server_address's info
+	server_address.sin_family = AF_INET;
+	server_address.sin_addr.s_addr = inet_addr(ip_address);
+	server_address.sin_port = htons(port);
+
+	// Connect the client socket to server socket
+	if (connect(socket_fd, (struct sockaddr *)&server_address, sizeof(server_address)) != 0)
 	{
-		printf("connection with the server failed...\n");
+		printf("[-]Connection with the server failed\n");
 		exit(0);
 	}
 	else
-		printf("connected to the server..\n");
+		printf("[+]Connected to the server\n");
 
-	// function for chat
-	func(sockfd);
+	// Main function
+	func(socket_fd);
 
-	// close the socket
-	close(sockfd);
+	// Close socket
+	close(socket_fd);
+	printf("[+]Exit program\n");
+	
+	return 0;
 }
