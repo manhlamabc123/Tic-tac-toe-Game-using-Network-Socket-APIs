@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h> // read(), write(), close()
+#include <pthread.h>
 #include "../exception/exception.h"
 #include "../account/account.h"
 #include "../app/app.h"
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
     struct sockaddr_in server_address, client_address;
     int socket_fd, connect_fd, len = sizeof(client_address);
     int pid;
+    pthread_t tid;
 
     if (port < 1 || port > 65535)
     {
@@ -78,18 +80,7 @@ int main(int argc, char *argv[])
         else
             printf("[+]Server accept the client_address\n");
 
-        if((pid = fork()) == -1)
-        {
-            printf("[-]Fork() failed\n");
-            close(connect_fd);
-            continue;
-        } else if (pid == 0)
-        {
-            printf("[+]Fork() successfully\n");
-            // Function for chatting between client_address and server
-            server_app(connect_fd);
-            close(connect_fd);
-        }
+        pthread_create(&tid, NULL, &server_app, (void *) connect_fd);
     }
 
     // After chatting close the socket

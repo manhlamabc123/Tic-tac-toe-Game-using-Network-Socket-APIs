@@ -70,9 +70,16 @@ goal:
     return user_choice[0];
 }
 
-int program_exit()
+int program_exit(int socket_fd)
 {
     char user_choice[BUFFER_SIZE];
+    char program_exit_signal[BUFFER_SIZE] = "0\0"; // 0 = exit
+
+    // Tell server that we are exiting program
+    if(send(socket_fd, program_exit_signal, sizeof(program_exit_signal), 0) < 0)
+        printf("[-]Fail to send client message: %s\n", program_exit_signal);
+    else
+        printf("[+]Success in sending client message: %s\n", program_exit_signal);
 
     printf("-------------Exit----------\n");
     printf("Do you really really want to exit?(y/n): ");
