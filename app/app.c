@@ -109,10 +109,13 @@ void *server_app(void *arg)
 	case 1: // sign up
 		printf("[+]Client trying to sign up.\n");
 		account = account_sign_up(client_fd, account);
+		return NULL;
 	case 2: // sign in
 		printf("[+]Client trying to sign in.\n");
 		account_sign_in(client_fd, account);
+		return NULL;
 	default:
-		break;
+		printf("[-]Server don't understand this signal.\n");
+		return NULL;
 	}
 }
