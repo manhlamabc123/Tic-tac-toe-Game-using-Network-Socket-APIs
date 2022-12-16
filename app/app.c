@@ -21,14 +21,11 @@ void client_app(int socket_fd)
 	char username[BUFFER_SIZE];
 	char password[BUFFER_SIZE];
 	char sign_in_feedback[BUFFER_SIZE];
-	int n;
+	int is_signed_in = 0;
 	char choice[BUFFER_SIZE];
 	char bye[BUFFER_SIZE] = "bye\n\0";
 	char new_password[BUFFER_SIZE];
 	char confirm_password[BUFFER_SIZE];
-	char buffer[BUFFER_SIZE];
-	char only_number[BUFFER_SIZE];
-	char only_string[BUFFER_SIZE];
 	char sign_out_request[100] = "bye\0";
 
 	switch (welcome())
@@ -71,18 +68,12 @@ void client_app(int socket_fd)
 			break;
 		case 1:
 			printf("Cannot find account.\n");
-			break;
+			return;
 		case 2:
-			printf("Account is not ready.\n");
-			break;
-		case 3:
 			printf("Wrong password.\n");
-			break;
-		case 4:
-			printf("Wrong password. Account is blocked.\n");
-			break;
+			return;
 		default:
-			break;
+			return;
 		}
 
 		printf("---------------------\n");
@@ -115,6 +106,9 @@ void *server_app(void *arg)
 	case 1: //sign up
 		printf("[+]Client trying to sign up.\n");
 		account = account_sign_up(client_fd, account);
+	case 2: //sign in
+		printf("[+]Client trying to sign in.\n");
+		account_sign_in(client_fd, account);
 	default:
 		break;
 	}

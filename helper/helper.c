@@ -110,7 +110,7 @@ int sign_up(int socket_fd)
     char confirm_password[BUFFER_SIZE];
     char sign_up_signal[BUFFER_SIZE] = "1\0"; // for now
 
-    // Tell server that we are exiting program
+    // Tell server that we are sign up
     if(send(socket_fd, sign_up_signal, sizeof(sign_up_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", sign_up_signal);
     else
@@ -167,6 +167,13 @@ int sign_in(int socket_fd, char* sign_in_feedback, int size_of_sign_in_feedback)
 {
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
+    char sign_in_signal[BUFFER_SIZE] = "2\0";
+
+    // Tell server that we are sign in
+    if(send(socket_fd, sign_in_signal, sizeof(sign_in_signal), 0) < 0)
+        printf("[-]Fail to send client message: %s\n", sign_in_signal);
+    else
+        printf("[+]Success in sending client message: %s\n", sign_in_signal);
 
 goal0:
     // Clean buffers

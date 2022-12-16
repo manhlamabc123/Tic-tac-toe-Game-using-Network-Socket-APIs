@@ -111,32 +111,32 @@ Account *read_account(Account *acc)
     return acc;
 }
 
-Account* account_sign_up(int client_fd, Account *acc)
+Account *account_sign_up(int client_fd, Account *acc)
 {
     printf("[+]Sign up function.\n");
 
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
 
-    if(recv(client_fd, username, sizeof(username), 0) < 0)
+    if (recv(client_fd, username, sizeof(username), 0) < 0)
     {
-		printf("[-]Fail to receive client username.\n");
-	}
-	else
-	{
-		standardize_input(username, sizeof(username));
-		printf("[+]Client username: %s\n", username);
-	}
+        printf("[-]Fail to receive client username.\n");
+    }
+    else
+    {
+        standardize_input(username, sizeof(username));
+        printf("[+]Client username: %s\n", username);
+    }
 
-    if(recv(client_fd, password, sizeof(password), 0) < 0)
+    if (recv(client_fd, password, sizeof(password), 0) < 0)
     {
-		printf("[-]Fail to receive client password.\n");
-	}
-	else
-	{
-		standardize_input(password, sizeof(password));
-		printf("[+]Client password: %s\n", password);
-	}
+        printf("[-]Fail to receive client password.\n");
+    }
+    else
+    {
+        standardize_input(password, sizeof(password));
+        printf("[+]Client password: %s\n", password);
+    }
 
     acc = add_account(acc, username, password);
     number_of_account++;
@@ -148,11 +148,12 @@ Account* account_sign_up(int client_fd, Account *acc)
 void update_file(Account *acc)
 {
     FILE *inp = fopen("data/nguoidung.txt", "w+");
-    if(inp==NULL){
+    if (inp == NULL)
+    {
         printf("Cannot open file.\n");
         return;
     }
-    
+
     Account *cur = acc;
     while (cur != NULL)
     {
@@ -162,20 +163,64 @@ void update_file(Account *acc)
     fclose(inp);
 }
 
-int account_sign_in(Account *acc, char *username, char *password)
+void account_sign_in(int client_fd, Account *acc)
 {
+    printf("[+]Sign in function.\n");
+
+    char username[BUFFER_SIZE];
+    char password[BUFFER_SIZE];
+    char sign_in_feedback[BUFFER_SIZE];
+
+    if (recv(client_fd, username, sizeof(username), 0) < 0)
+    {
+        printf("[-]Fail to receive client username.\n");
+    }
+    else
+    {
+        standardize_input(username, sizeof(username));
+        printf("[+]Client username: %s\n", username);
+    }
+
+    if (recv(client_fd, password, sizeof(password), 0) < 0)
+    {
+        printf("[-]Fail to receive client password.\n");
+    }
+    else
+    {
+        standardize_input(password, sizeof(password));
+        printf("[+]Client password: %s\n", password);
+    }
+
     if (check_user(acc, username) != 0)
     {
         // Cannot find account
-        return 1;
+        sprintf(sign_in_feedback, "%d", 1);
+        if (send(client_fd, sign_in_feedback, sizeof(sign_in_feedback), 0) < 0)
+        {
+            printf("[-]Fail to send client message: %s\n", sign_in_feedback);
+        }
+        else
+        {
+            printf("[+]Success in sending client message: %s\n", sign_in_feedback);
+            return;
+        }
     }
     if (check_password(acc, password) != 0)
     {
         // Password is incorrect
-        return 3;
+        sprintf(sign_in_feedback, "%d", 2);
+        if (send(client_fd, sign_in_feedback, sizeof(sign_in_feedback), 0) < 0)
+        {
+            printf("[-]Fail to send client message: %s\n", sign_in_feedback);
+        }
+        else
+        {
+            printf("[+]Success in sending client message: %s\n", sign_in_feedback);
+            return;
+        }
     }
 
-    printf("Hello %s, sign in is successful!\n", username);
+    printf("[+]Sign in is successful to: %s\n", username);
     Account *cur = acc;
     while (cur != NULL)
     {
@@ -185,7 +230,14 @@ int account_sign_in(Account *acc, char *username, char *password)
         }
         cur = cur->next;
     }
-    return 0;
+
+    sprintf(sign_in_feedback, "%d", 0);
+    if (send(client_fd, sign_in_feedback, sizeof(sign_in_feedback), 0) < 0)
+        printf("[-]Fail to send client message: %s\n", sign_in_feedback);
+    else
+        printf("[+]Success in sending client message: %s\n", sign_in_feedback);
+
+    return;
 }
 
 void search(Account *acc)
@@ -210,7 +262,7 @@ void search(Account *acc)
     return;
 }
 
-int sign_out(Account *acc, char* username)
+int sign_out(Account *acc, char *username)
 {
     if (check_user(acc, username) != 0)
     {
@@ -254,7 +306,7 @@ int check_activate_code(char *activate_code, char *correct_activate_code)
     return strcmp(activate_code, correct_activate_code);
 }
 
-int change_password(Account *acc, char* username, char* new_password)
+int change_password(Account *acc, char *username, char *new_password)
 {
     int success = 0;
     Account *cur = acc;
