@@ -166,7 +166,7 @@ void update_file(Account *acc)
     fclose(inp);
 }
 
-int sign_in(Account *acc, char *username, char *password)
+int account_sign_in(Account *acc, char *username, char *password)
 {
     if (check_user(acc, username) != 0)
     {

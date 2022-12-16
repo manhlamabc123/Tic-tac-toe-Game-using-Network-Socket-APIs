@@ -36,7 +36,7 @@ void client_app(int socket_fd)
 		break;
 	case 'n':
 		printf("This is sign in option.\n");
-		// sign_in();
+		sign_up(socket_fd);
 		break;
 	case 'b':
 		return;
