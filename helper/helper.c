@@ -108,7 +108,13 @@ int sign_up(int socket_fd)
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
     char confirm_password[BUFFER_SIZE];
-    char control_signal[BUFFER_SIZE] = "sign in\0"; // for now
+    char sign_up_signal[BUFFER_SIZE] = "1\0"; // for now
+
+    // Tell server that we are exiting program
+    if(send(socket_fd, sign_up_signal, sizeof(sign_up_signal), 0) < 0)
+        printf("[-]Fail to send client message: %s\n", sign_up_signal);
+    else
+        printf("[+]Success in sending client message: %s\n", sign_up_signal);
 
     printf("---------Sign up-----------\n");
 goal:
@@ -151,8 +157,7 @@ goal2:
     {
         goto goal2;
     }
-
-    send(socket_fd, control_signal, sizeof(control_signal), 0);
+    
     send(socket_fd, username, sizeof(username), 0);
     send(socket_fd, confirm_password, sizeof(confirm_password), 0);
     return 1;

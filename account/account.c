@@ -1,27 +1,33 @@
 #include "account.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h> // read(), write(), close()
+#include "../exception/exception.h"
+#define BUFFER_SIZE 1024
 
 int number_of_account;
 
-Account *create_new_account(char *username, char *password, char *homepage, int status)
+Account *create_new_account(char *username, char *password, int status)
 {
     Account *p = (Account *)malloc(sizeof(struct _Account));
     strcpy(p->username, username);
     strcpy(p->password, password);
-    strcpy(p->homepage, homepage);
     p->status = status;
     p->is_signed_in = 0;
     p->next = NULL;
     return p;
 }
 
-Account *add_account(Account *account, char *username, char *password, char *homepage, int status)
+Account *add_account(Account *account, char *username, char *password, int status)
 {
     if (account == NULL)
     {
-        Account *temp = create_new_account(username, password, homepage, status);
+        Account *temp = create_new_account(username, password, status);
         return temp;
     }
     if (check_user(account, username))
@@ -31,7 +37,7 @@ Account *add_account(Account *account, char *username, char *password, char *hom
         {
             cur = cur->next;
         }
-        Account *temp = create_new_account(username, password, homepage, status);
+        Account *temp = create_new_account(username, password, status);
         cur->next = temp;
         return account;
     }
@@ -96,9 +102,9 @@ Account *read_account(Account *acc)
 {
     char username[30];
     char password[30];
-    char homepage[100];
     int status;
     number_of_account = 0;
+
     FILE *inp = fopen("data/nguoidung.txt", "r");
     if (!inp)
     {
@@ -108,9 +114,9 @@ Account *read_account(Account *acc)
 
     do
     {
-        if (fscanf(inp, "%s %s %d %s", username, password, &status, homepage) > 0)
+        if (fscanf(inp, "%s %s %d", username, password, &status) > 0)
         {
-            acc = add_account(acc, username, password, homepage, status);
+            acc = add_account(acc, username, password, status);
             number_of_account++;
         }
         else
@@ -120,31 +126,36 @@ Account *read_account(Account *acc)
     return acc;
 }
 
-Account *register_account(Account *acc)
+Account* account_sign_up(int client_fd, Account *acc)
 {
-    printf("----Welcome to Register function.----\n");
+    printf("[+]Sign up function.\n");
 
-    char username[30];
-    char password[30];
-    char homepage[100];
-    printf("Input your Username: ");
-    scanf("%s", username);
-    fflush(stdin);
-    if (check_user(acc, username) == 0)
+    char username[BUFFER_SIZE];
+    char password[BUFFER_SIZE];
+
+    if(recv(client_fd, username, sizeof(username), 0) < 0)
     {
-        printf("This account existed! \n");
-        return acc;
-    }
+		printf("[-]Fail to receive client username.\n");
+	}
+	else
+	{
+		standardize_input(username, sizeof(username));
+		printf("[+]Client username: %s\n", username);
+	}
 
-    printf("Input your Password: ");
-    scanf("%s", password);
-    fflush(stdin);
-    printf("Input your Homepage: ");
-    scanf("%s", homepage);
-    fflush(stdin);
-    acc = add_account(acc, username, password, homepage, 2);
+    if(recv(client_fd, password, sizeof(password), 0) < 0)
+    {
+		printf("[-]Fail to receive client password.\n");
+	}
+	else
+	{
+		standardize_input(password, sizeof(password));
+		printf("[+]Client password: %s\n", password);
+	}
+
+    acc = add_account(acc, username, password, 2);
     number_of_account++;
-    printf("Successful registration. \n");
+    printf("[+]Successful registration.\n");
     update_file(acc);
     return acc;
 }
@@ -160,7 +171,7 @@ void update_file(Account *acc)
     Account *cur = acc;
     while (cur != NULL)
     {
-        fprintf(inp, "%s %s %d %s\n", cur->username, cur->password, cur->status, cur->homepage);
+        fprintf(inp, "%s %s %d\n", cur->username, cur->password, cur->status);
         cur = cur->next;
     }
     fclose(inp);

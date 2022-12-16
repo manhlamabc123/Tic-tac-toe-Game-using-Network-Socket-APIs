@@ -94,6 +94,8 @@ void *server_app(void *arg)
 	pthread_detach(pthread_self());
 	int client_fd = (int)arg;
 	char client_signal[BUFFER_SIZE];
+	Account* account = NULL;
+	account = read_account(account);
 
 	bzero(client_signal, sizeof(client_signal));
 	if (recv(client_fd, client_signal, sizeof(client_signal), 0) < 0)
@@ -104,5 +106,16 @@ void *server_app(void *arg)
 	{
 		standardize_input(client_signal, sizeof(client_signal));
 		printf("[+]Client message: %s\n", client_signal);
+	}
+
+	switch (atoi(client_signal))
+	{
+	case 0: //exit
+		return NULL;
+	case 1: //sign up
+		printf("[+]Client trying to sign up.\n");
+		account = account_sign_up(client_fd, account);
+	default:
+		break;
 	}
 }
