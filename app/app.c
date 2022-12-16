@@ -28,10 +28,26 @@ void client_app(int socket_fd)
 	char confirm_password[BUFFER_SIZE];
 	char sign_out_request[100] = "bye\0";
 
+goal:
 	switch (welcome())
 	{
 	case 'y':
 		sign_in(socket_fd, sign_in_feedback, sizeof(sign_in_feedback));
+		switch (atoi(sign_in_feedback))
+		{
+		case 0:
+			printf("Signed in successfully.\n");
+			is_signed_in = 1;
+			break;
+		case 1:
+			printf("Cannot find account.\n");
+			return;
+		case 2:
+			printf("Wrong password.\n");
+			return;
+		default:
+			return;
+		}
 		break;
 	case 'n':
 		sign_up(socket_fd);
@@ -44,40 +60,27 @@ void client_app(int socket_fd)
 		return;
 	}
 
-	while (1)
+	if (is_signed_in)
 	{
-		switch (atoi(sign_in_feedback))
+		switch (menu())
 		{
-		case 0:
-			printf("Signed in successfully.\n");
-			printf("------------------\n");
-			switch (menu())
-			{
-			case 1:
-				printf("Choice: Tutorial\n");
-				break;
-			case 2:
-				printf("Choice: Play\n");
-				break;
-			case 3:
-				printf("Choice: Log out\n");
-				break;
-			default:
-				break;
-			}
-			break;
 		case 1:
-			printf("Cannot find account.\n");
-			return;
+			printf("Coming soon...\n");
+			goto goal;
+			break;
 		case 2:
-			printf("Wrong password.\n");
-			return;
+			printf("Coming soon...\n");
+			goto goal;
+			break;
+		case 3:
+			printf("Choice: Log out\n");
+			goto goal;
 		default:
-			return;
+			break;
 		}
-
-		printf("---------------------\n");
 	}
+
+	return;
 }
 
 void *server_app(void *arg)
@@ -85,7 +88,7 @@ void *server_app(void *arg)
 	pthread_detach(pthread_self());
 	int client_fd = (int)arg;
 	char client_signal[BUFFER_SIZE];
-	Account* account = NULL;
+	Account *account = NULL;
 	account = read_account(account);
 
 	bzero(client_signal, sizeof(client_signal));
@@ -101,12 +104,12 @@ void *server_app(void *arg)
 
 	switch (atoi(client_signal))
 	{
-	case 0: //exit
+	case 0: // exit
 		return NULL;
-	case 1: //sign up
+	case 1: // sign up
 		printf("[+]Client trying to sign up.\n");
 		account = account_sign_up(client_fd, account);
-	case 2: //sign in
+	case 2: // sign in
 		printf("[+]Client trying to sign in.\n");
 		account_sign_in(client_fd, account);
 	default:
