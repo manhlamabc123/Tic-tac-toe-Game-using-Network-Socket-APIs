@@ -33,63 +33,22 @@ void client_app(int socket_fd)
 	switch (welcome())
 	{
 	case 'y':
+		printf("[+]This is sign in option.\n");
+		sign_in(socket_fd, sign_in_feedback, sizeof(sign_in_feedback));
 		break;
 	case 'n':
-		printf("This is sign in option.\n");
+		printf("[+]This is sign up option.\n");
 		sign_up(socket_fd);
 		break;
 	case 'b':
 		return;
 	default:
-		printf("Program error.\n");
+		printf("[-]Program error.\n");
 		return;
 	}
 
-	for (;;)
+	while (1)
 	{
-	goal0:
-		// Clean buffers
-		bzero(username, sizeof(username));
-		bzero(password, sizeof(password));
-
-		// Get user's input
-		printf("Username: ");
-		if (fgets(username, sizeof(username), stdin) == NULL)
-			break;
-
-		// Check for exception
-		if (check_spaces(username, strlen(username)))
-		{
-			printf("Username contains white space. Please enter again.\n");
-			goto goal0;
-		}
-	goal1:
-		printf("Password: ");
-			if (fgets(password, sizeof(username), stdin) == NULL)
-				break;
-
-		// Check for '\n' input
-		if (strcmp(username, "\n") == 0 && strcmp(password, "\n") == 0)
-		{
-			printf("Exit Program.\n");
-			char exit_program[100] = "exit_program\0";
-			write(socket_fd, exit_program, strlen(exit_program));
-			break;
-		}
-
-		// Check for scape
-		if (check_spaces(password, strlen(password)))
-		{
-			printf("Password contains white space. Please enter again.\n");
-			goto goal1;
-		}
-
-		// Send username & password to server
-		write(socket_fd, username, sizeof(username));
-		write(socket_fd, password, sizeof(password));
-
-		// Sign in response
-		read(socket_fd, sign_in_feedback, BUFFER_SIZE);
 		switch (atoi(sign_in_feedback))
 		{
 		case 0:
@@ -169,7 +128,7 @@ void server_app(int connect_fd)
         printf("Password: %s\n", password);
 
         // Sign in
-        feedback = sign_in(acc, username, password);
+        feedback = account_sign_in(acc, username, password);
         if (feedback == 3) // If wrong password
         {
             password_incorrect_times--;

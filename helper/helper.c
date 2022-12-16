@@ -98,7 +98,6 @@ goal:
 
 int sign_up(int socket_fd)
 {
-
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
     char confirm_password[BUFFER_SIZE];
@@ -149,5 +148,57 @@ goal2:
     send(socket_fd, control_signal, sizeof(control_signal), 0);
     send(socket_fd, username, sizeof(username), 0);
     send(socket_fd, confirm_password, sizeof(confirm_password), 0);
+    return 1;
+}
+
+int sign_in(int socket_fd, char* sign_in_feedback, int size_of_sign_in_feedback)
+{
+    char username[BUFFER_SIZE];
+    char password[BUFFER_SIZE];
+
+goal0:
+    // Clean buffers
+    bzero(username, sizeof(username));
+    bzero(password, sizeof(password));
+
+    // Get user's input
+    printf("Username: ");
+    if (fgets(username, sizeof(username), stdin) == NULL)
+        return 0;
+
+    // Check for exception
+    if (check_spaces(username, strlen(username)))
+    {
+        printf("Username contains white space. Please enter again.\n");
+        goto goal0;
+    }
+goal1:
+    printf("Password: ");
+    if (fgets(password, sizeof(username), stdin) == NULL)
+        return 0;
+
+    // Check for '\n' input
+    if (strcmp(username, "\n") == 0 && strcmp(password, "\n") == 0)
+    {
+        printf("Exit Program.\n");
+        char exit_program[100] = "exit_program\0";
+        write(socket_fd, exit_program, strlen(exit_program));
+        return 0;
+    }
+
+    // Check for scape
+    if (check_spaces(password, strlen(password)))
+    {
+        printf("Password contains white space. Please enter again.\n");
+        goto goal1;
+    }
+
+    // Send username & password to server
+    send(socket_fd, username, sizeof(username), 0);
+    send(socket_fd, password, sizeof(password), 0);
+
+    // Sign in response
+    recv(socket_fd, sign_in_feedback, size_of_sign_in_feedback, 0);
+
     return 1;
 }
