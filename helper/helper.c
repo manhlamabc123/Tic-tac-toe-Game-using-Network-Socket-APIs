@@ -1,6 +1,11 @@
 #include <stdio.h>
-#include <string.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h> // read(), write(), close()
 #include "helper.h"
 #include "../exception/exception.h"
 #include "../account/account.h"
@@ -65,7 +70,7 @@ goal:
     return user_choice[0];
 }
 
-int exit()
+int program_exit()
 {
     char user_choice[BUFFER_SIZE];
 
