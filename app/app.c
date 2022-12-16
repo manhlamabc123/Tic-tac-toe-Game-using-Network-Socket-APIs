@@ -14,6 +14,9 @@
 
 void client_app(int socket_fd)
 {
+	// Clear scene
+	system("clear");
+
 	char username[BUFFER_SIZE];
 	char password[BUFFER_SIZE];
 	char sign_in_feedback[BUFFER_SIZE];

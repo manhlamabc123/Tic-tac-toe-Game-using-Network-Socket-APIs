@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         {
             printf("[+]Fork() successfully\n");
             // Function for chatting between client_address and server
-            client_app(connect_fd);
+            server_app(connect_fd);
             close(connect_fd);
         }
     }
