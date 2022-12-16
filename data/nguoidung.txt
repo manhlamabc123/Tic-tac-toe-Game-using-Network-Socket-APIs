@@ -1,5 +1,2 @@
-manhlamabc manh21223019 0
-google.com manhlamabc123 0
-manh123 1 126
-.58.99.199 1 126
-manh 123 2
+manh 123
+lam 12345

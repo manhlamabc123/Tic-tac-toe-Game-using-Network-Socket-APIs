@@ -12,22 +12,21 @@
 
 int number_of_account;
 
-Account *create_new_account(char *username, char *password, int status)
+Account *create_new_account(char *username, char *password)
 {
     Account *p = (Account *)malloc(sizeof(struct _Account));
     strcpy(p->username, username);
     strcpy(p->password, password);
-    p->status = status;
     p->is_signed_in = 0;
     p->next = NULL;
     return p;
 }
 
-Account *add_account(Account *account, char *username, char *password, int status)
+Account *add_account(Account *account, char *username, char *password)
 {
     if (account == NULL)
     {
-        Account *temp = create_new_account(username, password, status);
+        Account *temp = create_new_account(username, password);
         return temp;
     }
     if (check_user(account, username))
@@ -37,7 +36,7 @@ Account *add_account(Account *account, char *username, char *password, int statu
         {
             cur = cur->next;
         }
-        Account *temp = create_new_account(username, password, status);
+        Account *temp = create_new_account(username, password);
         cur->next = temp;
         return account;
     }
@@ -72,19 +71,6 @@ int check_password(Account *account, char *password)
     return 1;
 }
 
-int check_status(Account *account, char *username)
-{
-    Account *cur = account;
-    while (cur != NULL)
-    {
-        if (strcmp(cur->username, username) == 0)
-        {
-            return cur->status;
-        }
-        cur = cur->next;
-    }
-}
-
 int check_signed_in(Account *account, char *username)
 {
     Account *cur = account;
@@ -102,7 +88,6 @@ Account *read_account(Account *acc)
 {
     char username[30];
     char password[30];
-    int status;
     number_of_account = 0;
 
     FILE *inp = fopen("data/nguoidung.txt", "r");
@@ -114,9 +99,9 @@ Account *read_account(Account *acc)
 
     do
     {
-        if (fscanf(inp, "%s %s %d", username, password, &status) > 0)
+        if (fscanf(inp, "%s %s", username, password) > 0)
         {
-            acc = add_account(acc, username, password, status);
+            acc = add_account(acc, username, password);
             number_of_account++;
         }
         else
@@ -153,7 +138,7 @@ Account* account_sign_up(int client_fd, Account *acc)
 		printf("[+]Client password: %s\n", password);
 	}
 
-    acc = add_account(acc, username, password, 2);
+    acc = add_account(acc, username, password);
     number_of_account++;
     printf("[+]Successful registration.\n");
     update_file(acc);
@@ -171,7 +156,7 @@ void update_file(Account *acc)
     Account *cur = acc;
     while (cur != NULL)
     {
-        fprintf(inp, "%s %s %d\n", cur->username, cur->password, cur->status);
+        fprintf(inp, "%s %s\n", cur->username, cur->password);
         cur = cur->next;
     }
     fclose(inp);
@@ -183,11 +168,6 @@ int account_sign_in(Account *acc, char *username, char *password)
     {
         // Cannot find account
         return 1;
-    }
-    if (check_status(acc, username) == 0 || check_status(acc, username) == 2)
-    {
-        // Account is either block or idle
-        return 2;
     }
     if (check_password(acc, password) != 0)
     {
@@ -227,21 +207,6 @@ void search(Account *acc)
         return;
     }
 
-    switch (check_status(acc, username))
-    {
-    case 0:
-        printf("Account is blocked!\n");
-        break;
-    case 1:
-        printf("Account is activated!\n");
-        break;
-    case 2:
-        printf("Account is idle!\n");
-        break;
-    default:
-        printf("Something wrong!!!");
-        break;
-    }
     return;
 }
 
@@ -289,70 +254,6 @@ int check_activate_code(char *activate_code, char *correct_activate_code)
     return strcmp(activate_code, correct_activate_code);
 }
 
-void activate(Account *acc)
-{
-    printf("----Welcome to activate function.----\n");
-    char username[30];
-    char password[30];
-    char activate_code[30];
-    char correct_activate_code[30] = "20194616";
-
-    printf("Input your Username: ");
-    scanf("%s", username);
-    if (check_user(acc, username) != 0)
-    {
-        printf("Account does not exist!\n");
-        return;
-    }
-
-    printf("Input your Password: ");
-    scanf("%s", password);
-    if (check_password(acc, password) != 0)
-    {
-        printf("Password is incorrect!\n");
-        return;
-    }
-
-    int time = 4;
-    do
-    {
-        printf("Enter your activate code: ");
-        scanf("%s", activate_code);
-        if (check_activate_code(activate_code, correct_activate_code) != 0)
-        {
-            printf("Activate Code is not correct, enter again (%d times left).\n", time - 1);
-            time--;
-        }
-        else
-        {
-            Account *cur = acc;
-            while (cur != NULL)
-            {
-                if (strcmp(cur->username, username) == 0)
-                {
-                    cur->status = 1;
-                    printf("Change to activate successfully.\n");
-                }
-                cur = cur->next;
-            }
-            update_file(acc);
-            return;
-        }
-    } while (time != 0);
-    printf("This account is blocked!\n");
-    Account *cur = acc;
-    while (cur != NULL)
-    {
-        if (strcmp(cur->username, username) == 0)
-        {
-            cur->status = 0;
-        }
-        cur = cur->next;
-    }
-    update_file(acc);
-    return;
-}
-
 int change_password(Account *acc, char* username, char* new_password)
 {
     int success = 0;
@@ -368,19 +269,4 @@ int change_password(Account *acc, char* username, char* new_password)
     }
     update_file(acc);
     return success;
-}
-
-void change_current_account_status(Account *acc, char *username, int status)
-{
-    Account *cur = acc;
-    while (cur != NULL)
-    {
-        if (strcmp(cur->username, username) == 0)
-        {
-            cur->status = status;
-        }
-        cur = cur->next;
-    }
-    update_file(acc);
-    return;
 }
