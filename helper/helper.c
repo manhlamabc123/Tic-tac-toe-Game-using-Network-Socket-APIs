@@ -75,7 +75,7 @@ int program_exit(int socket_fd)
     char user_choice[BUFFER_SIZE];
     char program_exit_signal[BUFFER_SIZE] = "0\0"; // 0 = exit
 
-    // Tell server that we are exiting program
+    // Send exit program signal to Server
     if(send(socket_fd, program_exit_signal, sizeof(program_exit_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", program_exit_signal);
     else
@@ -84,13 +84,14 @@ int program_exit(int socket_fd)
     printf("-------------Exit----------\n");
     printf("Do you really really want to exit?(y/n): ");
 goal:
+    // Get user's choice
     if (fgets(user_choice, sizeof(user_choice), stdin) == NULL)
     {
         printf("Input error.\n");
         return 0;
     }
 
-    // Check input
+    // Check user's input
     if (check_yes_no(user_choice))
     {
         printf("Invalid choice. Again please: ");
@@ -110,7 +111,7 @@ int sign_up(int socket_fd)
     char confirm_password[BUFFER_SIZE];
     char sign_up_signal[BUFFER_SIZE] = "1\0"; // for now
 
-    // Tell server that we are sign up
+    // Send sign up signal to server
     if(send(socket_fd, sign_up_signal, sizeof(sign_up_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", sign_up_signal);
     else
@@ -118,48 +119,61 @@ int sign_up(int socket_fd)
 
     printf("---------Sign up-----------\n");
 goal:
+    // Get username
     printf("Username: ");
     if (fgets(username, sizeof(username), stdin) == NULL)
     {
         printf("Input error.\n");
         return 0;
     }
+
+    // Check username
     if (check_spaces(username, sizeof(username)))
     {
         printf("Contain white scape(s). Try again.\n");
         goto goal;
     }
 goal1:
+    // Get password
     printf("Password: ");
     if (fgets(password, sizeof(password), stdin) == NULL)
     {
         printf("Input error.\n");
         return 0;
     }
+
+    // Check password
     if (check_spaces(password, sizeof(password)))
     {
         printf("Contain white scape(s). Try again.\n");
         goto goal1;
     }
 goal2:
-    printf("New password: ");
+    // Get confirm password
+    printf("Confirm password: ");
     if (fgets(confirm_password, sizeof(confirm_password), stdin) == NULL)
     {
         printf("Input error.\n");
         return 0;
     }
+
+    // Check confirm password
     if (check_spaces(confirm_password, sizeof(confirm_password)))
     {
         printf("Contain white scape(s). Try again.\n");
         goto goal2;
     }
+
+    // Check if confirm password and password are the same
     if (check_confirm_password(confirm_password, password))
     {
         goto goal2;
     }
     
+    // Send username & password to Server
     send(socket_fd, username, sizeof(username), 0);
     send(socket_fd, confirm_password, sizeof(confirm_password), 0);
+    
     return 1;
 }
 
@@ -169,43 +183,34 @@ int sign_in(int socket_fd, char* sign_in_feedback, int sizeof_sign_in_feedback, 
     char password[BUFFER_SIZE];
     char sign_in_signal[BUFFER_SIZE] = "2\0";
 
-    // Tell server that we are sign in
+    // Send sign in signal to server
     if(send(socket_fd, sign_in_signal, sizeof(sign_in_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", sign_in_signal);
     else
         printf("[+]Success in sending client message: %s\n", sign_in_signal);
 
 goal0:
-    // Clean buffers
     bzero(username, sizeof(username));
     bzero(password, sizeof(password));
 
-    // Get user's input
+    // Get username's input
     printf("Username: ");
     if (fgets(username, sizeof(username), stdin) == NULL)
         return 0;
 
-    // Check for exception
+    // Check username
     if (check_spaces(username, strlen(username)))
     {
         printf("Username contains white space. Please enter again.\n");
         goto goal0;
     }
 goal1:
+    // Get password's input
     printf("Password: ");
     if (fgets(password, sizeof(username), stdin) == NULL)
         return 0;
 
-    // Check for '\n' input
-    if (strcmp(username, "\n") == 0 && strcmp(password, "\n") == 0)
-    {
-        printf("Exit Program.\n");
-        char exit_program[100] = "exit_program\0";
-        write(socket_fd, exit_program, strlen(exit_program));
-        return 0;
-    }
-
-    // Check for scape
+    // Check password
     if (check_spaces(password, strlen(password)))
     {
         printf("Password contains white space. Please enter again.\n");
@@ -219,7 +224,7 @@ goal1:
     // Return username
     strcpy(return_username, username);
 
-    // Sign in response
+    // Get sign in feedback
     recv(socket_fd, sign_in_feedback, sizeof_sign_in_feedback, 0);
 
     return 1;
@@ -230,27 +235,27 @@ int log_out(int socket_fd, char* username, int sizeof_username)
     char log_out_signal[BUFFER_SIZE] = "3\0";
     char log_out_feedback[BUFFER_SIZE];
 
-    // Tell server that we are sign in
+    // Send log out signal to Server
     if(send(socket_fd, log_out_signal, sizeof(log_out_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", log_out_signal);
     else
         printf("[+]Success in sending client message: %s\n", log_out_signal);
 
-    // Who is logging out
+    // Get username, who is logging out
     send(socket_fd, username, sizeof_username, 0);
 
-    // receive server feedback
+    // Receive server feedback
     recv(socket_fd, log_out_feedback, sizeof(log_out_feedback), 0);
 
     switch (atoi(log_out_feedback))
     {
-    case 0:
+    case 0: // Log out successfully
         printf("[+]%s logged out.\n", username);
         return 0;
-    case 1:
+    case 1: // Account does not exist
         printf("[-]Account does not exist!\n");
         return 0;
-    case 2:
+    case 2: // Account've yet signed in
         printf("[-]Yet signed in.\n");
         return 0;
     default:
