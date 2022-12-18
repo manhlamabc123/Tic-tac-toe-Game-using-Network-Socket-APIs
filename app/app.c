@@ -46,11 +46,11 @@ goal:
 			goto goal;
 		}
 		break;
-	case 'n':// Sign up
+	case 'n': // Sign up
 		sign_up(socket_fd);
 		goto goal;
 		break;
-	case 'b': // Exit program
+	case 'b':						 // Exit program
 		if (program_exit(socket_fd)) // if True then exit
 			return;
 		else // if False then go back to Welcome
@@ -62,16 +62,17 @@ goal:
 
 	if (is_signed_in) // If sign in successfully
 	{
+	goal1:
 		switch (menu()) // Menu
 		{
 		case 1: // Tutorial (Play with bot)
 			printf("[+]Coming soon...\n");
 			RunGame();
-			goto goal;
+			goto goal1;
 		case 2: // Play (Play with other player)
 			printf("[+]Coming soon...\n");
-			goto goal;
-		case 3: // Log out 
+			goto goal1;
+		case 3: // Log out
 			log_out(socket_fd, current_username, sizeof(current_username));
 			goto goal;
 		default:
@@ -93,7 +94,7 @@ void *server_app(void *arg)
 	pthread_t thread_id = pthread_self();
 
 	while (1)
-	{	
+	{
 		// Get client's signal
 		if (recv(client_fd, client_signal, sizeof(client_signal), 0) < 0)
 		{

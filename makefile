@@ -1,6 +1,6 @@
-main: server.o client.o exception.o account.o helper.o app.o
-	gcc -o server server.o exception.o account.o helper.o app.o
-	gcc -o client client.o exception.o account.o helper.o app.o
+main: server.o client.o exception.o account.o helper.o app.o game.o
+	gcc -o server server.o exception.o account.o helper.o app.o game.o
+	gcc -o client client.o exception.o account.o helper.o app.o game.o
 
 server.o:
 	gcc -c client_server/server.c
@@ -16,6 +16,9 @@ account.o:
 
 helper.o:
 	gcc -c helper/helper.c
+
+game.o:
+	gcc -c game/game.c
 
 app.o:
 	gcc -c app/app.c
