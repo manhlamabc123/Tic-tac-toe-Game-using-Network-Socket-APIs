@@ -262,18 +262,28 @@ void search(Account *acc)
     return;
 }
 
-int sign_out(Account *acc, char *username)
+void account_log_out(int client_fd, Account *acc)
 {
+    char log_out_feedback[BUFFER_SIZE];
+    char username[BUFFER_SIZE];
+
+    recv(client_fd, username, sizeof(username), 0);
+    standardize_input(username, sizeof(username));
+
     if (check_user(acc, username) != 0)
     {
-        printf("Account does not exist!\n");
-        return 0;
+        printf("[-]Account does not exist!\n");
+        sprintf(log_out_feedback, "%d", 1);
+        send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0);
+        return;
     }
 
     if (check_signed_in(acc, username) == 0)
     {
-        printf("Yet signed in.\n");
-        return 0;
+        printf("[-]Yet signed in.\n");
+        sprintf(log_out_feedback, "%d", 2);
+        send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0);
+        return;
     }
 
     Account *cur = acc;
@@ -282,11 +292,14 @@ int sign_out(Account *acc, char *username)
         if (strcmp(cur->username, username) == 0)
         {
             cur->is_signed_in = 0;
-            return 1;
+            printf("[+]%s logged out.\n", username);
+            sprintf(log_out_feedback, "%d", 0);
+            send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0);
+            return;
         }
         cur = cur->next;
     }
-    return 0;
+    return;
 }
 
 void free_list(Account *head)

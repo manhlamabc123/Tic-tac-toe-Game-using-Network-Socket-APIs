@@ -15,6 +15,6 @@ Account* account_sign_up(int client_fd, Account *account);
 void update_file(Account *account);
 void account_sign_in(int client_fd, Account *acc);
 void search(Account *account);
-int sign_out(Account *account, char* username);
+void account_log_out(int client_fd, Account *account);
 void free_list(Account *account);
 int change_password(Account *acc, char* username, char* new_password);

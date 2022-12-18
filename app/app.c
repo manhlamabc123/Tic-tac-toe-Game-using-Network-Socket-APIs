@@ -20,18 +20,20 @@ void client_app(int socket_fd)
 
 	char sign_in_feedback[BUFFER_SIZE];
 	int is_signed_in = 0;
+	char current_username[BUFFER_SIZE];
 
 goal:
 	switch (welcome())
 	{
 	case 'y':
-		sign_in(socket_fd, sign_in_feedback, sizeof(sign_in_feedback));
+		sign_in(socket_fd, sign_in_feedback, sizeof(sign_in_feedback), current_username);
+		standardize_input(current_username, sizeof(current_username));
 		switch (atoi(sign_in_feedback))
 		{
 		case 0:
-			printf("[-]Signed in successfully.\n");
+			printf("[+]Signed in successfully: %s\n", current_username);
 			is_signed_in = 1;
-			goto goal;
+			break;
 		case 1:
 			printf("[-]Cannot find account.\n");
 			goto goal;
@@ -68,7 +70,7 @@ goal:
 			printf("[+]Coming soon...\n");
 			goto goal;
 		case 3:
-			printf("[+]Logged out\n");
+			log_out(socket_fd, current_username, sizeof(current_username));
 			goto goal;
 		default:
 			printf("[-]Program error.\n");
@@ -111,6 +113,10 @@ void *server_app(void *arg)
 			case 2: // sign in
 				printf("[+]Client trying to sign in.\n");
 				account_sign_in(client_fd, account);
+				break;
+			case 3: // log out
+				printf("[+]Client trying to log out.\n");
+				account_log_out(client_fd, account);
 				break;
 			default:
 				printf("[-]Server don't understand this signal.\n");

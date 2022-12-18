@@ -163,7 +163,7 @@ goal2:
     return 1;
 }
 
-int sign_in(int socket_fd, char* sign_in_feedback, int size_of_sign_in_feedback)
+int sign_in(int socket_fd, char* sign_in_feedback, int sizeof_sign_in_feedback, char* return_username)
 {
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
@@ -216,8 +216,47 @@ goal1:
     send(socket_fd, username, sizeof(username), 0);
     send(socket_fd, password, sizeof(password), 0);
 
+    // Return username
+    strcpy(return_username, username);
+
     // Sign in response
-    recv(socket_fd, sign_in_feedback, size_of_sign_in_feedback, 0);
+    recv(socket_fd, sign_in_feedback, sizeof_sign_in_feedback, 0);
+
+    return 1;
+}
+
+int log_out(int socket_fd, char* username, int sizeof_username)
+{
+    char log_out_signal[BUFFER_SIZE] = "3\0";
+    char log_out_feedback[BUFFER_SIZE];
+
+    // Tell server that we are sign in
+    if(send(socket_fd, log_out_signal, sizeof(log_out_signal), 0) < 0)
+        printf("[-]Fail to send client message: %s\n", log_out_signal);
+    else
+        printf("[+]Success in sending client message: %s\n", log_out_signal);
+
+    // Who is logging out
+    send(socket_fd, username, sizeof_username, 0);
+
+    // receive server feedback
+    recv(socket_fd, log_out_feedback, sizeof(log_out_feedback), 0);
+
+    switch (atoi(log_out_feedback))
+    {
+    case 0:
+        printf("[+]%s logged out.\n", username);
+        return 0;
+    case 1:
+        printf("[-]Account does not exist!\n");
+        return 0;
+    case 2:
+        printf("[-]Yet signed in.\n");
+        return 0;
+    default:
+        printf("[-]Undefined log_out_feedback.\n");
+        return 0;
+    }
 
     return 1;
 }
