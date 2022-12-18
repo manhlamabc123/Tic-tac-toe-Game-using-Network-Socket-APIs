@@ -11,6 +11,7 @@
 #include "../account/account.h"
 #include "../exception/exception.h"
 #include "../helper/helper.h"
+#include "../game/game.h"
 #define BUFFER_SIZE 1024
 
 void client_app(int socket_fd)
@@ -65,6 +66,7 @@ goal:
 		{
 		case 1: // Tutorial (Play with bot)
 			printf("[+]Coming soon...\n");
+			RunGame();
 			goto goal;
 		case 2: // Play (Play with other player)
 			printf("[+]Coming soon...\n");
