@@ -18,15 +18,8 @@ void client_app(int socket_fd)
 	// Clear scene
 	system("clear");
 
-	char username[BUFFER_SIZE];
-	char password[BUFFER_SIZE];
 	char sign_in_feedback[BUFFER_SIZE];
 	int is_signed_in = 0;
-	char choice[BUFFER_SIZE];
-	char bye[BUFFER_SIZE] = "bye\n\0";
-	char new_password[BUFFER_SIZE];
-	char confirm_password[BUFFER_SIZE];
-	char sign_out_request[100] = "bye\0";
 
 goal:
 	switch (welcome())
