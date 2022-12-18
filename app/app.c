@@ -50,6 +50,8 @@ goal:
 	case 'b':
 		if (program_exit(socket_fd))
 			return;
+		else
+			goto goal;
 	default:
 		printf("[-]Program error.\n");
 		return;
@@ -60,18 +62,17 @@ goal:
 		switch (menu())
 		{
 		case 1:
-			printf("Coming soon...\n");
+			printf("[+]Coming soon...\n");
 			goto goal;
-			break;
 		case 2:
-			printf("Coming soon...\n");
+			printf("[+]Coming soon...\n");
 			goto goal;
-			break;
 		case 3:
-			printf("Choice: Log out\n");
+			printf("[+]Logged out\n");
 			goto goal;
 		default:
-			break;
+			printf("[-]Program error.\n");
+			goto goal;
 		}
 	}
 
