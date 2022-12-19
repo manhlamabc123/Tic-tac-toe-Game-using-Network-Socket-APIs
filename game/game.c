@@ -58,7 +58,7 @@ int FindThreeInARow(const int *board, const int our_index, const int us)
     return threeCount;
 }
 
-void InitialiseBoard(int *board)
+void initialise_board(int *board)
 {
     int i = 0;
     for (i = 0; i < 25; ++i)
@@ -71,7 +71,7 @@ void InitialiseBoard(int *board)
     }
 }
 
-void PrintBoard(const int *board)
+void print_board(const int *board)
 {
     int i = 0;
     char pceChars[] = "OX|-";
@@ -86,7 +86,7 @@ void PrintBoard(const int *board)
     }
 }
 
-int HasEmpty(const int *board)
+int has_empty(const int *board)
 {
     int i = 0;
     for (i = 0; i < 9; ++i)
@@ -97,7 +97,7 @@ int HasEmpty(const int *board)
     return 0;
 }
 
-int GetHumanMove(const int *board, const int Side)
+int get_player_move(const int *board, const int side)
 {
     char userInput[4];
     int i = 0;
@@ -189,54 +189,53 @@ int GetWinningMove(int *board, const int side)
     return ourMove;
 }
 
-int GetComputerMove(int *board, const int side)
+int get_bot_move(int *board, const int side)
 {
-    int numFree = 0;
-    int availableMoves[9];
-    int randMove = 0;
+    int num_free = 0;
+    int available_moves[9];
+    int random_move = 0;
 
-    randMove = GetWinningMove(board, side);
-    if (randMove != -1)
+    random_move = GetWinningMove(board, side);
+    if (random_move != -1)
     {
-        return randMove;
+        return random_move;
     }
 
-    randMove = GetWinningMove(board, side ^ 1);
-    if (randMove != -1)
+    random_move = GetWinningMove(board, side ^ 1);
+    if (random_move != -1)
     {
-        return randMove;
+        return random_move;
     }
 
-    randMove = GetNextBest(board);
-    if (randMove != -1)
+    random_move = GetNextBest(board);
+    if (random_move != -1)
     {
-        return randMove;
+        return random_move;
     }
-    randMove = 0;
-    /* availableMoves[0]
+    random_move = 0;
+    /* available_moves[0]
      */
     int i = 0;
     for (i = 0; i < 9; ++i)
     {
         if (board[ConvertTo25[i]] == EMPTY)
         {
-            availableMoves[numFree++] = ConvertTo25[i];
+            available_moves[num_free++] = ConvertTo25[i];
         }
     }
-    randMove = (rand() % numFree);
-    return availableMoves[randMove];
+    random_move = (rand() % num_free);
+    return available_moves[random_move];
 }
 
-void MakeMove(int *board, const int sq, const int side)
+void make_move(int *board, const int sq, const int side)
 {
     board[sq] = side;
 }
 
-void RunGameBot(int socket_fd, Account current_username)
+void play_with_bot(int socket_fd, Account current_username)
 {
-    int board[25];      // Board
-    int GameOver = 0;   // bool game_over
-    int Side = NOUGHTS; // O
+    // Initialize variables
+    int side = NOUGHTS; // O
     int move = 0;
     char game_bot_signal[BUFFER_SIZE] = "4\0";
     Game game;
@@ -247,6 +246,8 @@ void RunGameBot(int socket_fd, Account current_username)
 
     // Get current time
     snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+
+    // Set game date
     strcpy(game.date, time);
 
     // Get first player
@@ -262,16 +263,16 @@ void RunGameBot(int socket_fd, Account current_username)
     else
         printf("[+]Success in sending client message: %s\n", game_bot_signal);
 
-    InitialiseBoard(game.board.board); // GUI
+    initialise_board(game.board.board);
 
     while (game.status == PROCESS)
     {
         // Print board
-        PrintBoard(game.board.board);
+        print_board(game.board.board);
 
         // Get user move
-        move = GetHumanMove(game.board.board, Side);
-        MakeMove(game.board.board, move, Side);
+        move = get_player_move(game.board.board, side);
+        make_move(game.board.board, move, side);
 
         // Create next move
         next_move.account = current_username;
@@ -287,7 +288,7 @@ void RunGameBot(int socket_fd, Account current_username)
     }
 }
 
-int GetSide(Game game)
+int get_side(Game game)
 {
     Move last_move = game.moves[game.number_of_moves];
     if (strcmp(game.first_player.username, last_move.account.username) == 0)
@@ -301,7 +302,7 @@ void server_game_bot(int client_fd, Account *account)
 {
     Game game;
     int next_move;
-    int Side;
+    int side;
 
     while (1)
     {
@@ -309,17 +310,17 @@ void server_game_bot(int client_fd, Account *account)
         recv(client_fd, &game, sizeof(struct _game), 0);
 
         // Get side
-        Side = GetSide(game);
+        side = get_side(game);
 
         // Get bot move
-        next_move = GetComputerMove(game.board.board, Side);
-        MakeMove(game.board.board, next_move, Side);
+        next_move = get_bot_move(game.board.board, side);
+        make_move(game.board.board, next_move, side);
 
         // Check win-con
-        if (FindThreeInARow(game.board.board, next_move, Side ^ 1) == 3)
+        if (FindThreeInARow(game.board.board, next_move, side ^ 1) == 3)
         {
             printf("\n[+]Game over!\n");
-            if (Side == NOUGHTS)
+            if (side == NOUGHTS)
             {
                 game.status = LOSE;
                 printf("[+]Computer wins\n");
@@ -332,7 +333,7 @@ void server_game_bot(int client_fd, Account *account)
         }
 
         // If board don't have any empty zone, then both draw
-        if (!HasEmpty(game.board.board))
+        if (!has_empty(game.board.board))
         {
             printf("[+]Game over!\n");
             game.status = DRAW;

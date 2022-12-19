@@ -63,8 +63,7 @@ goal:
 		switch (menu()) // Menu
 		{
 		case 1: // Tutorial (Play with bot)
-			printf("[+]Coming soon...\n");
-			RunGameBot(socket_fd, current_user);
+			play_with_bot(socket_fd, current_user);
 			goto goal1;
 		case 2: // Play (Play with other player)
 			printf("[+]Coming soon...\n");
