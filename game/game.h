@@ -41,7 +41,7 @@ typedef struct _game
     int status;
 } Game;
 
-void RunGame(int);
+void RunGameBot(int, char*);
 void MakeMove(int *board, const int sq, const int side);
 int GetComputerMove(int *board, const int side);
 int GetWinningMove(int *board, const int side);

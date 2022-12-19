@@ -67,7 +67,7 @@ goal:
 		{
 		case 1: // Tutorial (Play with bot)
 			printf("[+]Coming soon...\n");
-			RunGame(socket_fd);
+			RunGameBot(socket_fd, current_username);
 			goto goal1;
 		case 2: // Play (Play with other player)
 			printf("[+]Coming soon...\n");

@@ -228,13 +228,29 @@ void MakeMove(int *board, const int sq, const int side)
     board[sq] = side;
 }
 
-void RunGame(int socket_fd)
+void RunGameBot(int socket_fd, Account current_username)
 {
     int board[25];      // Board
     int GameOver = 0;   // bool game_over
     int Side = NOUGHTS; // O
-    int LastMoveMade = 0;
+    int move = 0;
     char game_bot_signal[BUFFER_SIZE] = "4\0";
+    Game game;
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    char time[BUFFER_SIZE];
+    Move next_move;
+
+    // Get current time
+    snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d\0", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    strcpy(game.date, time);
+
+    // Get first player
+    game.first_player = current_username;
+
+    // Set game variables
+    game.status = PROCESS;
+    game.number_of_moves = 0;
 
     // Send game bot signal to Server
     if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
@@ -242,26 +258,29 @@ void RunGame(int socket_fd)
     else
         printf("[+]Success in sending client message: %s\n", game_bot_signal);
 
-    InitialiseBoard(&board[0]); // GUI
-    PrintBoard(&board[0]);      // GUI
+    InitialiseBoard(game.board.board); // GUI
 
-    while (!GameOver)
+    while (game.status == PROCESS)
     {
-        if (Side == NOUGHTS)
-        {
-            LastMoveMade = GetHumanMove(&board[0], Side); // Get input
-            MakeMove(&board[0], LastMoveMade, Side);      // Modify board
-            Side = CROSSES;                               // Switch side
-        }
-        else
-        {
-            LastMoveMade = GetComputerMove(&board[0], Side);
-            MakeMove(&board[0], LastMoveMade, Side);
-            Side = NOUGHTS;
-            PrintBoard(&board[0]);
-        }
+        // Print board
+        PrintBoard(game.board.board);
+
+        // Get user move
+        move = GetHumanMove(game.board.board, Side);
+        MakeMove(game.board.board, move, Side);
+
+        // Create next move
+        next_move.account = current_username;
+        next_move.move = move;
+        game.moves[game.number_of_moves] = next_move;
+        game.number_of_moves = game.number_of_moves + 1;
+
+        // Send game to Server
+        send(socket_fd, &game, sizeof(struct _game), 0);
+
+        // Recv game from Server
+        recv(socket_fd, &game, sizeof(struct _game), 0);
     }
-    PrintBoard(&board[0]);
 }
 
 int GetSide(Game game)
@@ -315,6 +334,8 @@ void server_game_bot(int client_fd, Account *account)
             game.status = DRAW;
             printf("[+]It's a draw!\n");
         }
+
+        send(client_fd, &game, sizeof(struct _game), 0);
 
         return;
     }
