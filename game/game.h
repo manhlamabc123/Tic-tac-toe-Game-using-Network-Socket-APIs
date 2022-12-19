@@ -1,18 +1,47 @@
-enum
+#include "../account/account.h"
+#define BUFFER_SIZE 1024
+
+enum STATUS
 {
-    NOUGHTS,
-    CROSSES,
-    BORDER,
-    EMPTY
-};
-enum
-{
-    HUMAN_WIN,
-    COMP_WIN,
+    PROCESS,
+    WIN,
+    LOSE,
     DRAW
 };
 
-void RunGame();
+enum BOARD
+{
+    NOUGHTS, // O
+    CROSSES, // X
+    BORDER,
+    EMPTY
+};
+
+typedef struct _board
+{
+    int size;
+    int board[BUFFER_SIZE];
+} Board;
+
+typedef struct _move
+{
+    Account account;
+    int move;
+} Move;
+
+typedef struct _game
+{
+    int id;
+    char date[BUFFER_SIZE];
+    Board board;
+    Account first_player;
+    Account second_player;
+    int number_of_moves;
+    Move moves[BUFFER_SIZE];
+    int status;
+} Game;
+
+void RunGame(int);
 void MakeMove(int *board, const int sq, const int side);
 int GetComputerMove(int *board, const int side);
 int GetWinningMove(int *board, const int side);
@@ -21,3 +50,6 @@ int GetHumanMove(const int *board, const int Side);
 int HasEmpty(const int *board);
 void PrintBoard(const int *board);
 void InitialiseBoard(int *board);
+
+void server_game_bot(int, Account*);
+int GetSide(Game);

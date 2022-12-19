@@ -36,15 +36,15 @@ int GetNumForDir(int startSq, const int dir, const int *board, const int us)
     return found;
 }
 
-int FindThreeInARow(const int *board, const int ourindex, const int us)
+int FindThreeInARow(const int *board, const int our_index, const int us)
 {
     int Dir = 0, i = 0;
     int threeCount = 1;
     for (i = 0; i < 4; ++i)
     {
         Dir = Direction[i];
-        threeCount += GetNumForDir(ourindex + Dir, Dir, board, us);
-        threeCount += GetNumForDir(ourindex + Dir * -1, Dir * -1, board, us);
+        threeCount += GetNumForDir(our_index + Dir, Dir, board, us);
+        threeCount += GetNumForDir(our_index + Dir * -1, Dir * -1, board, us);
         if (threeCount == 3)
         {
             break;
@@ -71,12 +71,12 @@ void PrintBoard(const int *board)
 {
     int i = 0;
     char pceChars[] = "OX|-";
-    printf("\n\nBoard:\n\n");
+    printf("\n\n[+]Board:\n\n"); // Change here
     for (i = 0; i < 9; ++i)
     {
         if (i != 0 && i % 3 == 0)
         {
-            printf("\n\n");
+            printf("\n\n"); //
         }
         printf("%4c", pceChars[board[ConvertTo25[i]]]);
     }
@@ -101,26 +101,26 @@ int GetHumanMove(const int *board, const int Side)
     int move = -1;
     while (moveOk == 0)
     {
-        printf("\nPlease enter a move from 1 to 9:\n");
+        printf("\n[+]Please enter a move from 1 to 9:\n");
         fgets(userInput, 3, stdin);
         fflush(stdin);
 
         if (strlen(userInput) != 2)
         {
-            printf("Invalid strlen()\n");
+            printf("[-]Invalid strlen()\n");
             continue;
         }
         if (sscanf(userInput, "%d", &move) != 1)
         {
             move = -1;
-            printf("Invalid sscanf()\n");
+            printf("[-]Invalid sscanf()\n");
             continue;
         }
 
         if (move < 1 || move > 9)
         {
             move = -1;
-            printf("Invalid range\n");
+            printf("[-]Invalid range\n");
             continue;
         }
 
@@ -128,12 +128,12 @@ int GetHumanMove(const int *board, const int Side)
         if (board[ConvertTo25[move]] != EMPTY)
         {
             move = -1;
-            printf("Square not available\n");
+            printf("[-]Square not available\n");
             continue;
         }
         moveOk = 1;
     }
-    printf("Making Move..%d\n", (move + 1));
+    printf("[+]Making Move..%d\n", (move + 1));
     return ConvertTo25[move];
 }
 
@@ -228,23 +228,30 @@ void MakeMove(int *board, const int sq, const int side)
     board[sq] = side;
 }
 
-void RunGame()
+void RunGame(int socket_fd)
 {
-    int board[25];
-    int GameOver = 0;
-    int Side = NOUGHTS;
+    int board[25];      // Board
+    int GameOver = 0;   // bool game_over
+    int Side = NOUGHTS; // O
     int LastMoveMade = 0;
+    char game_bot_signal[BUFFER_SIZE] = "4\0";
 
-    InitialiseBoard(&board[0]);
-    PrintBoard(&board[0]);
+    // Send game bot signal to Server
+    if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
+        printf("[-]Fail to send client message: %s\n", game_bot_signal);
+    else
+        printf("[+]Success in sending client message: %s\n", game_bot_signal);
+
+    InitialiseBoard(&board[0]); // GUI
+    PrintBoard(&board[0]);      // GUI
 
     while (!GameOver)
     {
         if (Side == NOUGHTS)
         {
-            LastMoveMade = GetHumanMove(&board[0], Side);
-            MakeMove(&board[0], LastMoveMade, Side);
-            Side = CROSSES;
+            LastMoveMade = GetHumanMove(&board[0], Side); // Get input
+            MakeMove(&board[0], LastMoveMade, Side);      // Modify board
+            Side = CROSSES;                               // Switch side
         }
         else
         {
@@ -253,26 +260,62 @@ void RunGame()
             Side = NOUGHTS;
             PrintBoard(&board[0]);
         }
+    }
+    PrintBoard(&board[0]);
+}
 
-        if (FindThreeInARow(board, LastMoveMade, Side ^ 1) == 3)
+int GetSide(Game game)
+{
+    Move last_move = game.moves[game.number_of_moves];
+    if (strcmp(game.first_player.username, last_move.account.username) == 0)
+        return NOUGHTS;
+    if (strcmp(game.second_player.username, last_move.account.username) == 0)
+        return CROSSES;
+    return -1;
+}
+
+void server_game_bot(int client_fd, Account *account)
+{
+    Game game;
+    int next_move;
+    int Side;
+
+    while (1)
+    {
+        // Receive game
+        recv(client_fd, &game, sizeof(struct _game), 0);
+
+        // Get side
+        Side = GetSide(game);
+
+        // Get bot move
+        next_move = GetComputerMove(game.board.board, Side);
+        MakeMove(game.board.board, next_move, Side);
+
+        // Check win-con
+        if (FindThreeInARow(game.board.board, next_move, Side ^ 1) == 3)
         {
-            printf("\nGame over!\n");
-            GameOver = 1;
+            printf("\n[+]Game over!\n");
             if (Side == NOUGHTS)
             {
-                printf("Computer wins\n");
+                game.status = LOSE;
+                printf("[+]Computer wins\n");
             }
             else
             {
-                printf("Human wins\n");
+                game.status = WIN;
+                printf("[+]Human wins\n");
             }
         }
-        if (!HasEmpty(board))
+
+        // If board don't have any empty zone, then both draw
+        if (!HasEmpty(game.board.board))
         {
-            printf("Game over!\n");
-            GameOver = 1;
-            printf("It's a draw!\n");
+            printf("[+]Game over!\n");
+            game.status = DRAW;
+            printf("[+]It's a draw!\n");
         }
+
+        return;
     }
-    PrintBoard(&board[0]);
 }

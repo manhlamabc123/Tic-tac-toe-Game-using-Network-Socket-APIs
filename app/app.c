@@ -67,7 +67,7 @@ goal:
 		{
 		case 1: // Tutorial (Play with bot)
 			printf("[+]Coming soon...\n");
-			RunGame();
+			RunGame(socket_fd);
 			goto goal1;
 		case 2: // Play (Play with other player)
 			printf("[+]Coming soon...\n");
@@ -121,6 +121,10 @@ void *server_app(void *arg)
 			case 3: // log out signal
 				printf("[+]Client trying to log out.\n");
 				account_log_out(client_fd, account); // Account log out
+				break;
+			case 4: // play with bot signal
+				printf("[+]Client trying to play with bot.\n");
+				server_game_bot(client_fd, account); // Play with bot
 				break;
 			default:
 				printf("[-]Server don't understand this signal.\n");
