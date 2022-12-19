@@ -8,9 +8,7 @@
 #include <unistd.h> // read(), write(), close()
 #include <pthread.h>
 #include "app.h"
-#include "../account/account.h"
 #include "../exception/exception.h"
-#include "../helper/helper.h"
 #include "../game/game.h"
 #define BUFFER_SIZE 1024
 
@@ -21,18 +19,17 @@ void client_app(int socket_fd)
 
 	char sign_in_feedback[BUFFER_SIZE];
 	int is_signed_in = 0;
-	char current_username[BUFFER_SIZE];
+	Account current_user;
 
 goal:
 	switch (welcome()) // Welcome
 	{
 	case 'y': // Sign in
-		sign_in(socket_fd, sign_in_feedback, sizeof(sign_in_feedback), current_username);
-		standardize_input(current_username, sizeof(current_username));
+		sign_in(socket_fd, sign_in_feedback, sizeof(sign_in_feedback), current_user, sizeof(struct _Account));
 		switch (atoi(sign_in_feedback))
 		{
 		case 0: // Sign in success
-			printf("[+]Signed in successfully: %s\n", current_username);
+			printf("[+]Signed in successfully: %s\n", current_user.username);
 			is_signed_in = 1;
 			break;
 		case 1: // Sign in fail
@@ -67,13 +64,13 @@ goal:
 		{
 		case 1: // Tutorial (Play with bot)
 			printf("[+]Coming soon...\n");
-			RunGameBot(socket_fd, current_username);
+			RunGameBot(socket_fd, current_user);
 			goto goal1;
 		case 2: // Play (Play with other player)
 			printf("[+]Coming soon...\n");
 			goto goal1;
 		case 3: // Log out
-			log_out(socket_fd, current_username, sizeof(current_username));
+			log_out(socket_fd, current_user.username, sizeof(current_user.username));
 			goto goal;
 		default:
 			printf("[-]Program error.\n");

@@ -8,7 +8,7 @@
 #include <unistd.h> // read(), write(), close()
 #include <pthread.h>
 #include "../exception/exception.h"
-#include "../account/account.h"
+#include "../game/game.h"
 #include "../app/app.h"
 #define BUFFER_SIZE 1024
 

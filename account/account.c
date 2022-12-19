@@ -232,6 +232,7 @@ void account_sign_in(int client_fd, Account *acc)
         if (strcmp(cur->username, username) == 0)
         {
             cur->is_signed_in = 1;
+            send(client_fd, cur, sizeof(struct _Account), 0);
         }
         cur = cur->next;
     }

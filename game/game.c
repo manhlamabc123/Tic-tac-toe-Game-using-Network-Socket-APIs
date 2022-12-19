@@ -1,6 +1,10 @@
 #include <stdio.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <time.h>
 #include "game.h"
 
@@ -242,7 +246,7 @@ void RunGameBot(int socket_fd, Account current_username)
     Move next_move;
 
     // Get current time
-    snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d\0", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
     strcpy(game.date, time);
 
     // Get first player

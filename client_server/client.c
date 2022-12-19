@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
 #include "../exception/exception.h"
-#include "../helper/helper.h"
+#include "../game/game.h"
 #include "../app/app.h"
 #define BUFFER_SIZE 1024
 
