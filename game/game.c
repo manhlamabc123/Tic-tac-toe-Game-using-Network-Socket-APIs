@@ -71,11 +71,13 @@ void initialise_board(int *board)
     }
 }
 
-void print_board(const int *board)
+void print_board(const int *board, Account current_user)
 {
     int i = 0;
     char pceChars[] = "OX|-";
-    printf("\n\n[+]Board:\n\n"); // Change here
+    system("clear");
+    printf("[+]You: %s\n", current_user.username);
+    printf("[+]Board:\n"); // Change here
     for (i = 0; i < 9; ++i)
     {
         if (i != 0 && i % 3 == 0)
@@ -105,7 +107,7 @@ int get_player_move(const int *board, const int side)
     int move = -1;
     while (moveOk == 0)
     {
-        printf("\n[+]Please enter a move from 1 to 9:\n");
+        printf("\n[+]Please enter a move from 1 to 9:");
         fgets(userInput, 3, stdin);
         fflush(stdin);
 
@@ -137,7 +139,7 @@ int get_player_move(const int *board, const int side)
         }
         moveOk = 1;
     }
-    printf("[+]Making Move..%d\n", (move + 1));
+    printf("[+]Making Move: %d\n", (move + 1));
     return ConvertTo25[move];
 }
 
@@ -232,7 +234,7 @@ void make_move(int *board, const int sq, const int side)
     board[sq] = side;
 }
 
-void play_with_bot(int socket_fd, Account current_username)
+void play_with_bot(int socket_fd, Account current_user)
 {
     // Initialize variables
     int side = NOUGHTS; // O
@@ -251,7 +253,7 @@ void play_with_bot(int socket_fd, Account current_username)
     strcpy(game.date, time);
 
     // Get first player
-    game.first_player = current_username;
+    game.first_player = current_user;
 
     // Set game variables
     game.status = PROCESS;
@@ -268,14 +270,14 @@ void play_with_bot(int socket_fd, Account current_username)
     while (game.status == PROCESS)
     {
         // Print board
-        print_board(game.board.board);
+        print_board(game.board.board, current_user);
 
         // Get user move
         move = get_player_move(game.board.board, side);
         make_move(game.board.board, move, side);
 
         // Create next move
-        next_move.account = current_username;
+        next_move.account = current_user;
         next_move.move = move;
         game.moves[game.number_of_moves] = next_move;
         game.number_of_moves = game.number_of_moves + 1;
@@ -292,9 +294,9 @@ int get_side(Game game)
 {
     Move last_move = game.moves[game.number_of_moves];
     if (strcmp(game.first_player.username, last_move.account.username) == 0)
-        return NOUGHTS;
-    if (strcmp(game.second_player.username, last_move.account.username) == 0)
         return CROSSES;
+    if (strcmp(game.second_player.username, last_move.account.username) == 0)
+        return NOUGHTS;
     return -1;
 }
 
@@ -303,11 +305,22 @@ void server_game_bot(int client_fd, Account *account)
     Game game;
     int next_move;
     int side;
+    char bot_name[BUFFER_SIZE] = "bot\0"; 
+    Account bot;
+    strcpy(bot.username, bot_name);
 
     while (1)
     {
         // Receive game
         recv(client_fd, &game, sizeof(struct _game), 0);
+        game.second_player = bot;
+
+        // Print game
+        printf("[+]Game's date: %s\n", game.date);
+        printf("[+]Game's first player: %s\n", game.first_player.username);
+        printf("[+]Game's second player: %s\n", game.second_player.username);
+        printf("[+]Last move: %s - %d\n", game.moves[game.number_of_moves].account.username, game.moves[game.number_of_moves].move);
+        printf("[+]Game's Status: %d\n", game.status);
 
         // Get side
         side = get_side(game);
@@ -342,6 +355,12 @@ void server_game_bot(int client_fd, Account *account)
 
         send(client_fd, &game, sizeof(struct _game), 0);
 
-        return;
+        if(game.status != PROCESS)
+        {
+            printf("[+]Exit to menu.\n");
+            break;
+        }
     }
+
+    return;
 }

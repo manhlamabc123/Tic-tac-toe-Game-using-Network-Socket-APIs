@@ -176,7 +176,7 @@ goal2:
     return 1;
 }
 
-int sign_in(int socket_fd, char* sign_in_feedback, int sizeof_sign_in_feedback, Account return_user, int return_user_size)
+int sign_in(int socket_fd, char* sign_in_feedback, int sizeof_sign_in_feedback, Account* return_user, int return_user_size)
 {
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
@@ -221,7 +221,7 @@ goal1:
     send(socket_fd, password, sizeof(password), 0);
 
     // Get current user from Server
-    recv(socket_fd, &return_user, return_user_size, 0);
+    recv(socket_fd, return_user, return_user_size, 0);
 
     // Get sign in feedback
     recv(socket_fd, sign_in_feedback, sizeof_sign_in_feedback, 0);

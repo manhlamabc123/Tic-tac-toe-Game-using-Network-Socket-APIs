@@ -48,7 +48,7 @@ int GetWinningMove(int *board, const int side);
 int GetNextBest(const int *board);
 int get_player_move(const int *board, const int side);
 int has_empty(const int *board);
-void print_board(const int *board);
+void print_board(const int *board, Account current_user);
 void initialise_board(int *board);
 
 void server_game_bot(int, Account*);

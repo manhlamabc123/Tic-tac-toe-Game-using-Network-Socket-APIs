@@ -25,7 +25,7 @@ goal:
 	switch (welcome()) // Welcome
 	{
 	case 'y': // Sign in
-		sign_in(socket_fd, sign_in_feedback, sizeof(sign_in_feedback), current_user, sizeof(struct _Account));
+		sign_in(socket_fd, sign_in_feedback, sizeof(sign_in_feedback), &current_user, sizeof(struct _Account));
 		switch (atoi(sign_in_feedback))
 		{
 		case 0: // Sign in success
