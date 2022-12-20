@@ -276,6 +276,7 @@ void play_with_bot(int socket_fd, Account current_user)
     else
         printf("[+]Success in sending client message: %s\n", game_bot_signal);
 
+    // Initialise board
     initialise_board(game.board.board);
 
     while (1)
@@ -283,7 +284,7 @@ void play_with_bot(int socket_fd, Account current_user)
         // Print board
         print_board(game.board.board, current_user);
 
-        // Print game status
+        // Check game status
         switch (game.status)
         {
         case WIN:
@@ -322,6 +323,7 @@ void play_with_bot(int socket_fd, Account current_user)
 
 void server_game_bot(int client_fd, Account *account)
 {
+    // Initialise variables
     Game game;
     int move;
     int side;
@@ -332,9 +334,10 @@ void server_game_bot(int client_fd, Account *account)
 
     while (1)
     {
-        // Receive game
+        // Receive game from Client
         recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL);
 
+        // Check win-con
         side = get_side(game);
         if (FindThreeInARow(game.board.board, game.moves[game.number_of_moves - 1].move, side ^ 1) == 3)
         {
@@ -357,14 +360,16 @@ void server_game_bot(int client_fd, Account *account)
             printf("[+]It's a draw!\n");
         }
 
+        // Check status
         if (game.status != PROCESS)
         {
+            // Send game to Client
             send(client_fd, &game, sizeof(struct _game), 0);
             printf("[+]Exit to menu\n");
-            break;
+            break; // Exit loop
         }
 
-        // Print game
+        // Print game's info
         game.second_player = bot;
         printf("[+]Game's date: %s\n", game.date);
         printf("[+]Game's first player: %s\n", game.first_player.username);
@@ -382,6 +387,7 @@ void server_game_bot(int client_fd, Account *account)
         game.moves[game.number_of_moves] = next_move;
         game.number_of_moves = game.number_of_moves + 1;
 
+        // Check win-con
         side = get_side(game);
         if (FindThreeInARow(game.board.board, game.moves[game.number_of_moves - 1].move, side ^ 1) == 3)
         {
@@ -404,12 +410,14 @@ void server_game_bot(int client_fd, Account *account)
             game.status = DRAW;
         }
 
+        // Send game to Client
         send(client_fd, &game, sizeof(struct _game), 0);
 
+        // Check game status
         if (game.status != PROCESS)
         {
             printf("[+]Exit to menu\n");
-            break;
+            break; // Exit loop
         }
     }
 
