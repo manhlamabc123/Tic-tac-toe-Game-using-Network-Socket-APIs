@@ -273,8 +273,6 @@ void play_with_bot(int socket_fd, Account current_user)
     // Send game bot signal to Server
     if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", game_bot_signal);
-    else
-        printf("[+]Success in sending client message: %s\n", game_bot_signal);
 
     // Initialise board
     initialise_board(game.board.board);

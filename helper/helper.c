@@ -77,8 +77,6 @@ int program_exit(int socket_fd)
     // Send exit program signal to Server
     if(send(socket_fd, program_exit_signal, sizeof(program_exit_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", program_exit_signal);
-    else
-        printf("[+]Success in sending client message: %s\n", program_exit_signal);
 
     printf("-------------Exit----------\n");
     printf("Do you really really want to exit?(y/n): ");
@@ -113,8 +111,6 @@ int sign_up(int socket_fd)
     // Send sign up signal to server
     if(send(socket_fd, sign_up_signal, sizeof(sign_up_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", sign_up_signal);
-    else
-        printf("[+]Success in sending client message: %s\n", sign_up_signal);
 
     printf("---------Sign up-----------\n");
 goal:
@@ -185,8 +181,6 @@ int sign_in(int socket_fd, SignInFeedback* sign_in_feedback, int sizeof_sign_in_
     // Send sign in signal to server
     if(send(socket_fd, sign_in_signal, sizeof(sign_in_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", sign_in_signal);
-    else
-        printf("[+]Success in sending client message: %s\n", sign_in_signal);
 
 goal0:
     bzero(username, sizeof(username));
@@ -234,8 +228,6 @@ int log_out(int socket_fd, char* username, int sizeof_username)
     // Send log out signal to Server
     if(send(socket_fd, log_out_signal, sizeof(log_out_signal), 0) < 0)
         printf("[-]Fail to send client message: %s\n", log_out_signal);
-    else
-        printf("[+]Success in sending client message: %s\n", log_out_signal);
 
     // Get username, who is logging out
     send(socket_fd, username, sizeof_username, 0);
