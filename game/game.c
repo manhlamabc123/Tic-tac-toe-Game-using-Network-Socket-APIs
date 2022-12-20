@@ -286,7 +286,7 @@ void play_with_bot(int socket_fd, Account current_user)
         send(socket_fd, &game, sizeof(struct _game), 0);
 
         // Recv game from Server
-        recv(socket_fd, &game, sizeof(struct _game), 0);
+        recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL);
     }
 }
 
@@ -312,7 +312,7 @@ void server_game_bot(int client_fd, Account *account)
     while (1)
     {
         // Receive game
-        recv(client_fd, &game, sizeof(struct _game), 0);
+        recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL);
         game.second_player = bot;
 
         // Print game
