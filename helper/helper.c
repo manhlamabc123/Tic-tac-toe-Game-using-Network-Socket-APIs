@@ -220,11 +220,11 @@ goal1:
     send(socket_fd, username, sizeof(username), 0);
     send(socket_fd, password, sizeof(password), 0);
 
-    // Get current user from Server
-    recv(socket_fd, return_user, return_user_size, 0);
-
     // Get sign in feedback
     recv(socket_fd, sign_in_feedback, sizeof_sign_in_feedback, 0);
+
+    // Get current user from Server
+    recv(socket_fd, return_user, return_user_size, MSG_WAITALL);
 
     return 1;
 }
