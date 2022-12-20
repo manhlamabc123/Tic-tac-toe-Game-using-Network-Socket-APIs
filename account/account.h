@@ -5,6 +5,12 @@ typedef struct _Account {
     struct _Account *next;
 } Account;
 
+typedef struct _SignInFeedback
+{
+    int feedback;
+    Account current_user;
+} SignInFeedback;
+
 Account *create_new_account(char *username, char *password);
 Account *add_account(Account *account, char *username, char *password);
 int check_user(Account *account, char *username);

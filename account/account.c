@@ -171,7 +171,8 @@ void account_sign_in(int client_fd, Account *acc)
 
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
-    char sign_in_feedback[BUFFER_SIZE];
+    int sign_in_feedback;
+    SignInFeedback feedback;
 
     // Get username from Client
     if (recv(client_fd, username, sizeof(username), 0) < 0) // If fail
@@ -197,31 +198,18 @@ void account_sign_in(int client_fd, Account *acc)
 
     if (check_user(acc, username) != 0)
     {
-        // Cannot find account
-        sprintf(sign_in_feedback, "%d", 1);
-        if (send(client_fd, sign_in_feedback, sizeof(sign_in_feedback), 0) < 0)
-        {
-            printf("[-]Fail to send client message: %s\n", sign_in_feedback);
-        }
-        else
-        {
-            printf("[+]Success in sending client message: %s\n", sign_in_feedback);
-            return;
-        }
+        // Send feedback to Client
+        feedback.feedback = 1;
+        send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0);
+        return;
     }
+    
     if (check_password(acc, password) != 0)
     {
-        // Password is incorrect
-        sprintf(sign_in_feedback, "%d", 2);
-        if (send(client_fd, sign_in_feedback, sizeof(sign_in_feedback), 0) < 0)
-        {
-            printf("[-]Fail to send client message: %s\n", sign_in_feedback);
-        }
-        else
-        {
-            printf("[+]Success in sending client message: %s\n", sign_in_feedback);
-            return;
-        }
+        // Send feedback to Client
+        feedback.feedback = 2;
+        send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0);
+        return;
     }
 
     // Update account list
@@ -232,15 +220,11 @@ void account_sign_in(int client_fd, Account *acc)
         if (strcmp(cur->username, username) == 0)
         {
             cur->is_signed_in = 1;
-            
-            // Send feedback to Client
-            sprintf(sign_in_feedback, "%d", 0);
-            if (send(client_fd, sign_in_feedback, sizeof(sign_in_feedback), 0) < 0)
-                printf("[-]Fail to send client message: %s\n", sign_in_feedback);
-            else
-                printf("[+]Success in sending client message: %s\n", sign_in_feedback);
 
-            send(client_fd, cur, sizeof(struct _Account), 0);
+            // Send feedback to Client
+            feedback.feedback = 0;
+            feedback.current_user = *cur;
+            send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0);
         }
         cur = cur->next;
     }

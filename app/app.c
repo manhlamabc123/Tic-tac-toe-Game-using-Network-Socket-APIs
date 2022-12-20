@@ -17,19 +17,18 @@ void client_app(int socket_fd)
 	// Clear scene
 	system("clear");
 
-	char sign_in_feedback[BUFFER_SIZE];
+	SignInFeedback sign_in_feedback;
 	int is_signed_in = 0;
-	Account current_user;
 
 goal:
 	switch (welcome()) // Welcome
 	{
 	case 'y': // Sign in
-		sign_in(socket_fd, sign_in_feedback, sizeof(sign_in_feedback), &current_user, sizeof(struct _Account));
-		switch (atoi(sign_in_feedback))
+		sign_in(socket_fd, &sign_in_feedback, sizeof(struct _SignInFeedback));
+		switch (sign_in_feedback.feedback)
 		{
 		case 0: // Sign in success
-			printf("[+]Signed in successfully: %s\n", current_user.username);
+			printf("[+]Signed in successfully: %s\n", sign_in_feedback.current_user.username);
 			is_signed_in = 1;
 			break;
 		case 1: // Sign in fail
@@ -63,13 +62,13 @@ goal:
 		switch (menu()) // Menu
 		{
 		case 1: // Tutorial (Play with bot)
-			play_with_bot(socket_fd, current_user);
+			play_with_bot(socket_fd, sign_in_feedback.current_user);
 			goto goal1;
 		case 2: // Play (Play with other player)
 			printf("[+]Coming soon...\n");
 			goto goal1;
 		case 3: // Log out
-			log_out(socket_fd, current_user.username, sizeof(current_user.username));
+			log_out(socket_fd, sign_in_feedback.current_user.username, sizeof(sign_in_feedback.current_user.username));
 			goto goal;
 		default:
 			printf("[-]Program error.\n");
