@@ -140,7 +140,7 @@ int get_player_move(const int *board, const int side)
         moveOk = 1;
     }
     printf("[+]Making Move: %d\n", (move + 1));
-    
+
     return ConvertTo25[move];
 }
 
@@ -235,6 +235,16 @@ void make_move(int *board, const int sq, const int side)
     board[sq] = side;
 }
 
+int get_side(Game game)
+{
+    Move last_move = game.moves[game.number_of_moves - 1];
+    if (strcmp(game.first_player.username, last_move.account.username) == 0)
+        return CROSSES;
+    if (strcmp(game.second_player.username, last_move.account.username) == 0)
+        return NOUGHTS;
+    return -1;
+}
+
 void play_with_bot(int socket_fd, Account current_user)
 {
     // Initialize variables
@@ -305,16 +315,6 @@ void play_with_bot(int socket_fd, Account current_user)
             break;
         }
     }
-}
-
-int get_side(Game game)
-{
-    Move last_move = game.moves[game.number_of_moves - 1];
-    if (strcmp(game.first_player.username, last_move.account.username) == 0)
-        return CROSSES;
-    if (strcmp(game.second_player.username, last_move.account.username) == 0)
-        return NOUGHTS;
-    return -1;
 }
 
 void server_game_bot(int client_fd, Account *account)
