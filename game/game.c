@@ -99,7 +99,7 @@ int has_empty(const int *board)
     return 0;
 }
 
-int get_player_move(const int *board, const int side, int* real_move)
+int get_player_move(const int *board, const int side)
 {
     char userInput[4];
     int i = 0;
@@ -140,8 +140,7 @@ int get_player_move(const int *board, const int side, int* real_move)
         moveOk = 1;
     }
     printf("[+]Making Move: %d\n", (move + 1));
-
-    *real_move = atoi(userInput);
+    
     return ConvertTo25[move];
 }
 
@@ -247,7 +246,6 @@ void play_with_bot(int socket_fd, Account current_user)
     struct tm tm = *localtime(&t);
     char time[BUFFER_SIZE];
     Move next_move;
-    int real_move;
 
     // Get current time
     snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
@@ -276,12 +274,12 @@ void play_with_bot(int socket_fd, Account current_user)
         print_board(game.board.board, current_user);
 
         // Get user move
-        move = get_player_move(game.board.board, side, &real_move);
+        move = get_player_move(game.board.board, side);
         make_move(game.board.board, move, side);
 
         // Create next move
         next_move.account = current_user;
-        next_move.move = real_move;
+        next_move.move = move;
         game.moves[game.number_of_moves] = next_move;
         game.number_of_moves = game.number_of_moves + 1;
 
