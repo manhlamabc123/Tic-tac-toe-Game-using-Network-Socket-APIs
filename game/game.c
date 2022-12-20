@@ -239,9 +239,9 @@ int get_side(Game game)
 {
     Move last_move = game.moves[game.number_of_moves - 1];
     if (strcmp(game.first_player.username, last_move.account.username) == 0)
-        return NOUGHTS;
-    if (strcmp(game.second_player.username, last_move.account.username) == 0)
         return CROSSES;
+    if (strcmp(game.second_player.username, last_move.account.username) == 0)
+        return NOUGHTS;
     return -1;
 }
 
@@ -278,10 +278,29 @@ void play_with_bot(int socket_fd, Account current_user)
 
     initialise_board(game.board.board);
 
-    while (game.status == PROCESS)
+    while (1)
     {
         // Print board
         print_board(game.board.board, current_user);
+
+        // Print game status
+        switch (game.status)
+        {
+        case WIN:
+            printf("\n[+]%s won - %s lost\n", game.first_player.username, game.second_player.username);
+            break;
+        case LOSE:
+            printf("\n[+]%s won - %s lost\n", game.second_player.username, game.first_player.username);
+            break;
+        case DRAW:
+            printf("\n[+]A Draw\n");
+            break;
+        default:
+            break;
+        }
+
+        if (game.status != PROCESS)
+            break;
 
         // Get user move
         move = get_player_move(game.board.board, side);
@@ -298,109 +317,93 @@ void play_with_bot(int socket_fd, Account current_user)
 
         // Recv game from Server
         recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL);
-
-        // Print game status
-        switch (game.status)
-        {
-        case WIN:
-            printf("[+]%s won - %s lost\n", game.first_player.username, game.second_player.username);
-            break;
-        case LOSE:
-            printf("[+]%s won - %s lost\n", game.second_player.username, game.first_player.username);
-            break;
-        case DRAW:
-            printf("A Draw\n");
-            break;
-        default:
-            break;
-        }
     }
 }
 
 void server_game_bot(int client_fd, Account *account)
 {
     Game game;
-    int next_move;
+    int move;
     int side;
     char bot_name[BUFFER_SIZE] = "bot\0";
     Account bot;
+    Move next_move;
     strcpy(bot.username, bot_name);
 
     while (1)
     {
         // Receive game
         recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL);
-        game.second_player = bot;
+
+        side = get_side(game);
+        if (FindThreeInARow(game.board.board, game.moves[game.number_of_moves - 1].move, side ^ 1) == 3)
+        {
+            printf("[+]Game over\n");
+            if (side == NOUGHTS)
+            {
+                printf("[+]Second player wins\n");
+                game.status = LOSE;
+            }
+            else
+            {
+                printf("[+]First player wins\n");
+                game.status = WIN;
+            }
+        }
+        if (!has_empty(game.board.board))
+        {
+            printf("[+]Game over!\n");
+            game.status = DRAW;
+            printf("[+]It's a draw!\n");
+        }
+
+        if (game.status != PROCESS)
+        {
+            send(client_fd, &game, sizeof(struct _game), 0);
+            printf("[+]Exit to menu\n");
+            break;
+        }
 
         // Print game
+        game.second_player = bot;
         printf("[+]Game's date: %s\n", game.date);
         printf("[+]Game's first player: %s\n", game.first_player.username);
         printf("[+]Game's second player: %s\n", game.second_player.username);
         printf("[+]Last move: %s - %d\n", game.moves[game.number_of_moves - 1].account.username, game.moves[game.number_of_moves - 1].move);
         printf("[+]Game's Status: %d\n", game.status);
-        print_board(game.board.board, bot);
-
-        // Get side
-        side = get_side(game);
-        if(side == NOUGHTS) {
-            printf("[+]SIDE NOUGHTS\n");
-        }else {
-            printf("[+]SIDE CROSSES\n");
-        }
-
-        //check
-        if (FindThreeInARow(game.board.board, next_move, NOUGHTS ^ 1) == 3)
-        {
-            printf("[+]Game over\n");
-            printf("[+]First player wins\n");
-            game.status = WIN;
-            goto send;
-        }
-        if (FindThreeInARow(game.board.board, next_move, CROSSES ^ 1) == 3)
-        {
-            printf("[+]Game over\n");
-            printf("[+]Second player wins\n");
-            game.status = LOSE;
-            goto send;
-        }
-        // If board don't have any empty zone, then both draw
-        if (!has_empty(game.board.board))
-        {
-            printf("[+]Game over!\n");
-            game.status = DRAW;
-            printf("[+]It's a draw!\n");
-            goto send;
-        }
 
         // Get bot move
-        next_move = get_bot_move(game.board.board, side);
-        make_move(game.board.board, next_move, side);
+        move = get_bot_move(game.board.board, side);
+        make_move(game.board.board, move, side);
 
-        // Check win-con
-        if (FindThreeInARow(game.board.board, next_move, NOUGHTS ^ 1) == 3)
+        // Create next move
+        next_move.account = bot;
+        next_move.move = move;
+        game.moves[game.number_of_moves] = next_move;
+        game.number_of_moves = game.number_of_moves + 1;
+
+        side = get_side(game);
+        if (FindThreeInARow(game.board.board, game.moves[game.number_of_moves - 1].move, side ^ 1) == 3)
         {
             printf("[+]Game over\n");
-            printf("[+]First player wins\n");
-            game.status = WIN;
-            goto send;
+            if (side == NOUGHTS)
+            {
+                printf("[+]Second player wins\n");
+                game.status = LOSE;
+            }
+            else
+            {
+                printf("[+]First player wins\n");
+                game.status = WIN;
+            }
         }
-        if (FindThreeInARow(game.board.board, next_move, CROSSES ^ 1) == 3)
-        {
-            printf("[+]Game over\n");
-            printf("[+]Second player wins\n");
-            game.status = LOSE;
-            goto send;
-        }
-        // If board don't have any empty zone, then both draw
         if (!has_empty(game.board.board))
         {
             printf("[+]Game over!\n");
-            game.status = DRAW;
             printf("[+]It's a draw!\n");
-            goto send;
+            game.status = DRAW;
         }
 
-        send:
         send(client_fd, &game, sizeof(struct _game), 0);
 
         if (game.status != PROCESS)
