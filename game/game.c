@@ -75,7 +75,7 @@ void print_board(const int *board, Account current_user)
 {
     int i = 0;
     char pceChars[] = "OX|-";
-    // system("clear");
+    system("clear");
     printf("[+]You: %s\n", current_user.username);
     printf("[+]Board:\n"); // Change here
     for (i = 0; i < 9; ++i)
