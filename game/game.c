@@ -75,7 +75,7 @@ void print_board(const int *board, Account current_user)
 {
     int i = 0;
     char pceChars[] = "OX|-";
-    system("clear");
+    // system("clear");
     printf("[+]You: %s\n", current_user.username);
     printf("[+]Board:\n"); // Change here
     for (i = 0; i < 9; ++i)
@@ -99,7 +99,7 @@ int has_empty(const int *board)
     return 0;
 }
 
-int get_player_move(const int *board, const int side)
+int get_player_move(const int *board, const int side, int* real_move)
 {
     char userInput[4];
     int i = 0;
@@ -107,7 +107,7 @@ int get_player_move(const int *board, const int side)
     int move = -1;
     while (moveOk == 0)
     {
-        printf("\n[+]Please enter a move from 1 to 9:");
+        printf("\n[+]Please enter a move from 1 to 9: ");
         fgets(userInput, 3, stdin);
         fflush(stdin);
 
@@ -140,6 +140,8 @@ int get_player_move(const int *board, const int side)
         moveOk = 1;
     }
     printf("[+]Making Move: %d\n", (move + 1));
+
+    *real_move = atoi(userInput);
     return ConvertTo25[move];
 }
 
@@ -245,6 +247,7 @@ void play_with_bot(int socket_fd, Account current_user)
     struct tm tm = *localtime(&t);
     char time[BUFFER_SIZE];
     Move next_move;
+    int real_move;
 
     // Get current time
     snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
@@ -273,12 +276,12 @@ void play_with_bot(int socket_fd, Account current_user)
         print_board(game.board.board, current_user);
 
         // Get user move
-        move = get_player_move(game.board.board, side);
+        move = get_player_move(game.board.board, side, &real_move);
         make_move(game.board.board, move, side);
 
         // Create next move
         next_move.account = current_user;
-        next_move.move = move;
+        next_move.move = real_move;
         game.moves[game.number_of_moves] = next_move;
         game.number_of_moves = game.number_of_moves + 1;
 
@@ -287,12 +290,28 @@ void play_with_bot(int socket_fd, Account current_user)
 
         // Recv game from Server
         recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL);
+
+        // Print game status
+        switch (game.status)
+        {
+        case WIN:
+            printf("[+]%s won - %s lost\n", game.first_player.username, game.second_player.username);
+            break;
+        case LOSE:
+            printf("[+]%s won - %s lost\n", game.second_player.username, game.first_player.username);
+            break;
+        case DRAW:
+            printf("A Draw\n");
+            break;
+        default:
+            break;
+        }
     }
 }
 
 int get_side(Game game)
 {
-    Move last_move = game.moves[game.number_of_moves];
+    Move last_move = game.moves[game.number_of_moves - 1];
     if (strcmp(game.first_player.username, last_move.account.username) == 0)
         return CROSSES;
     if (strcmp(game.second_player.username, last_move.account.username) == 0)
@@ -305,7 +324,7 @@ void server_game_bot(int client_fd, Account *account)
     Game game;
     int next_move;
     int side;
-    char bot_name[BUFFER_SIZE] = "bot\0"; 
+    char bot_name[BUFFER_SIZE] = "bot\0";
     Account bot;
     strcpy(bot.username, bot_name);
 
@@ -319,7 +338,7 @@ void server_game_bot(int client_fd, Account *account)
         printf("[+]Game's date: %s\n", game.date);
         printf("[+]Game's first player: %s\n", game.first_player.username);
         printf("[+]Game's second player: %s\n", game.second_player.username);
-        printf("[+]Last move: %s - %d\n", game.moves[game.number_of_moves].account.username, game.moves[game.number_of_moves].move);
+        printf("[+]Last move: %s - %d\n", game.moves[game.number_of_moves - 1].account.username, game.moves[game.number_of_moves - 1].move);
         printf("[+]Game's Status: %d\n", game.status);
 
         // Get side
@@ -330,19 +349,17 @@ void server_game_bot(int client_fd, Account *account)
         make_move(game.board.board, next_move, side);
 
         // Check win-con
-        if (FindThreeInARow(game.board.board, next_move, side ^ 1) == 3)
+        if (FindThreeInARow(game.board.board, next_move, NOUGHTS ^ 1) == 3)
         {
-            printf("\n[+]Game over!\n");
-            if (side == NOUGHTS)
-            {
-                game.status = LOSE;
-                printf("[+]Computer wins\n");
-            }
-            else
-            {
-                game.status = WIN;
-                printf("[+]Human wins\n");
-            }
+            printf("[+]Game over\n");
+            printf("[+]First player wins\n");
+            game.status = WIN;
+        }
+        if (FindThreeInARow(game.board.board, next_move, CROSSES ^ 1) == 3)
+        {
+            printf("[+]Game over\n");
+            printf("[+]Second player wins\n");
+            game.status = LOSE;
         }
 
         // If board don't have any empty zone, then both draw
@@ -355,9 +372,9 @@ void server_game_bot(int client_fd, Account *account)
 
         send(client_fd, &game, sizeof(struct _game), 0);
 
-        if(game.status != PROCESS)
+        if (game.status != PROCESS)
         {
-            printf("[+]Exit to menu.\n");
+            printf("[+]Exit to menu\n");
             break;
         }
     }

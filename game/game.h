@@ -46,7 +46,7 @@ void make_move(int *board, const int sq, const int side);
 int get_bot_move(int *board, const int side);
 int GetWinningMove(int *board, const int side);
 int GetNextBest(const int *board);
-int get_player_move(const int *board, const int side);
+int get_player_move(const int *board, const int side, int* real_move);
 int has_empty(const int *board);
 void print_board(const int *board, Account current_user);
 void initialise_board(int *board);
