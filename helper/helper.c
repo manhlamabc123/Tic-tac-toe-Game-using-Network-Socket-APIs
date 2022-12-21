@@ -211,7 +211,8 @@ goal1:
     }
 
     // Send username & password to server
-    send(socket_fd, username, sizeof(username), 0);
+    if(send(socket_fd, username, sizeof(username), 0) < 0)
+        printf("[-]Fail to send client message\n");
     send(socket_fd, password, sizeof(password), 0);
 
     // Get sign in feedback
