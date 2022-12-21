@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <time.h>
+#include <errno.h>
 #include "game.h"
 
 /*int board[25] = {
@@ -272,7 +273,10 @@ void play_with_bot(int socket_fd, Account current_user)
 
     // Send game bot signal to Server
     if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
-        printf("[-]Fail to send client message: %s\n", game_bot_signal);
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
 
     // Initialise board
     initialise_board(game.board.board);
@@ -312,10 +316,18 @@ void play_with_bot(int socket_fd, Account current_user)
         game.number_of_moves = game.number_of_moves + 1;
 
         // Send game to Server
-        send(socket_fd, &game, sizeof(struct _game), 0);
+        if (send(socket_fd, &game, sizeof(struct _game), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
 
         // Recv game from Server
-        recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL);
+        if (recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
     }
 }
 
@@ -333,7 +345,11 @@ void server_game_bot(int client_fd, Account *account)
     while (1)
     {
         // Receive game from Client
-        recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL);
+        if (recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
 
         // Check win-con
         side = get_side(game);
@@ -362,7 +378,11 @@ void server_game_bot(int client_fd, Account *account)
         if (game.status != PROCESS)
         {
             // Send game to Client
-            send(client_fd, &game, sizeof(struct _game), 0);
+            if (send(client_fd, &game, sizeof(struct _game), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
+            }
             printf("[+]Exit to menu\n");
             break; // Exit loop
         }
@@ -409,7 +429,11 @@ void server_game_bot(int client_fd, Account *account)
         }
 
         // Send game to Client
-        send(client_fd, &game, sizeof(struct _game), 0);
+        if (send(client_fd, &game, sizeof(struct _game), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
 
         // Check game status
         if (game.status != PROCESS)
