@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h> // read(), write(), close()
+#include <errno.h>
 #include "helper.h"
 #include "../exception/exception.h"
 #define BUFFER_SIZE 1024
@@ -75,8 +76,11 @@ int program_exit(int socket_fd)
     char program_exit_signal[BUFFER_SIZE] = "0\0"; // 0 = exit
 
     // Send exit program signal to Server
-    if(send(socket_fd, program_exit_signal, sizeof(program_exit_signal), 0) < 0)
-        printf("[-]Fail to send client message: %s\n", program_exit_signal);
+    if (send(socket_fd, program_exit_signal, sizeof(program_exit_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
 
     printf("-------------Exit----------\n");
     printf("Do you really really want to exit?(y/n): ");
@@ -109,8 +113,11 @@ int sign_up(int socket_fd)
     char sign_up_signal[BUFFER_SIZE] = "1\0"; // for now
 
     // Send sign up signal to server
-    if(send(socket_fd, sign_up_signal, sizeof(sign_up_signal), 0) < 0)
-        printf("[-]Fail to send client message: %s\n", sign_up_signal);
+    if (send(socket_fd, sign_up_signal, sizeof(sign_up_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
 
     printf("---------Sign up-----------\n");
 goal:
@@ -162,25 +169,37 @@ goal2:
     // Check if confirm password and password are the same
     if (check_confirm_password(confirm_password, password))
     {
+        printf("[-]Incorrect confirm password\n");
         goto goal2;
     }
-    
+
     // Send username & password to Server
-    send(socket_fd, username, sizeof(username), 0);
-    send(socket_fd, confirm_password, sizeof(confirm_password), 0);
-    
+    if (send(socket_fd, username, sizeof(username), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
+    if (send(socket_fd, confirm_password, sizeof(confirm_password), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
+
     return 1;
 }
 
-int sign_in(int socket_fd, SignInFeedback* sign_in_feedback, int sizeof_sign_in_feedback)
+int sign_in(int socket_fd, SignInFeedback *sign_in_feedback, int sizeof_sign_in_feedback)
 {
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
     char sign_in_signal[BUFFER_SIZE] = "2\0";
 
     // Send sign in signal to server
-    if(send(socket_fd, sign_in_signal, sizeof(sign_in_signal), 0) < 0)
-        printf("[-]Fail to send client message: %s\n", sign_in_signal);
+    if (send(socket_fd, sign_in_signal, sizeof(sign_in_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
 
 goal0:
     bzero(username, sizeof(username));
@@ -189,7 +208,7 @@ goal0:
     // Get username's input
     printf("Username: ");
     if (fgets(username, sizeof(username), stdin) == NULL)
-        return 0;
+        return 1;
 
     // Check username
     if (check_spaces(username, strlen(username)))
@@ -201,7 +220,7 @@ goal1:
     // Get password's input
     printf("Password: ");
     if (fgets(password, sizeof(username), stdin) == NULL)
-        return 0;
+        return 1;
 
     // Check password
     if (check_spaces(password, strlen(password)))
@@ -211,30 +230,52 @@ goal1:
     }
 
     // Send username & password to server
-    if(send(socket_fd, username, sizeof(username), 0) < 0)
-        printf("[-]Fail to send client message\n");
-    send(socket_fd, password, sizeof(password), 0);
+    if (send(socket_fd, username, sizeof(username), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
+    if (send(socket_fd, password, sizeof(password), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
 
     // Get sign in feedback
-    recv(socket_fd, sign_in_feedback, sizeof_sign_in_feedback, MSG_WAITALL);
+    if (recv(socket_fd, sign_in_feedback, sizeof_sign_in_feedback, MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
 
-    return 1;
+    return 0;
 }
 
-int log_out(int socket_fd, char* username, int sizeof_username)
+int log_out(int socket_fd, char *username, int sizeof_username)
 {
     char log_out_signal[BUFFER_SIZE] = "3\0";
     char log_out_feedback[BUFFER_SIZE];
 
     // Send log out signal to Server
-    if(send(socket_fd, log_out_signal, sizeof(log_out_signal), 0) < 0)
-        printf("[-]Fail to send client message: %s\n", log_out_signal);
+    if (send(socket_fd, log_out_signal, sizeof(log_out_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
 
     // Get username, who is logging out
-    send(socket_fd, username, sizeof_username, 0);
+    if (send(socket_fd, username, sizeof_username, 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
 
     // Receive server feedback
-    recv(socket_fd, log_out_feedback, sizeof(log_out_feedback), 0);
+    if (recv(socket_fd, log_out_feedback, sizeof(log_out_feedback), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 1;
+    }
 
     switch (atoi(log_out_feedback))
     {

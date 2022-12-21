@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <unistd.h> // read(), write(), close()
 #include "../exception/exception.h"
+#include <errno.h>
 #define BUFFER_SIZE 1024
 
 int number_of_account;
@@ -121,7 +122,8 @@ Account *account_sign_up(int client_fd, Account *acc)
     // Get username from Client
     if (recv(client_fd, username, sizeof(username), 0) < 0) // If fail
     {
-        printf("[-]Fail to receive client username.\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return NULL;
     }
     else // If success
     {
@@ -132,7 +134,8 @@ Account *account_sign_up(int client_fd, Account *acc)
     // Get password from Client
     if (recv(client_fd, password, sizeof(password), 0) < 0) // If fail
     {
-        printf("[-]Fail to receive client password.\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return NULL;
     }
     else // If success
     {
@@ -177,7 +180,8 @@ void account_sign_in(int client_fd, Account *acc)
     // Get username from Client
     if (recv(client_fd, username, sizeof(username), 0) < 0) // If fail
     {
-        printf("[-]Fail to receive client username.\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
     }
     else // If success
     {
@@ -188,7 +192,8 @@ void account_sign_in(int client_fd, Account *acc)
     // Get password from Client
     if (recv(client_fd, password, sizeof(password), 0) < 0) // If fail
     {
-        printf("[-]Fail to receive client password.\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
     }
     else // If success
     {
@@ -200,15 +205,24 @@ void account_sign_in(int client_fd, Account *acc)
     {
         // Send feedback to Client
         feedback.feedback = 1;
-        send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0);
+        if (send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
         return;
     }
-    
+
     if (check_password(acc, password) != 0)
     {
         // Send feedback to Client
         feedback.feedback = 2;
-        send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0);
+        if (send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+
         return;
     }
 
@@ -224,7 +238,11 @@ void account_sign_in(int client_fd, Account *acc)
             // Send feedback to Client
             feedback.feedback = 0;
             feedback.current_user = *cur;
-            send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0);
+            if (send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
+            }
         }
         cur = cur->next;
     }
@@ -260,7 +278,11 @@ void account_log_out(int client_fd, Account *acc)
     char username[BUFFER_SIZE];
 
     // Get username from Client
-    recv(client_fd, username, sizeof(username), 0);
+    if (recv(client_fd, username, sizeof(username), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
     standardize_input(username, sizeof(username));
 
     // Check for Account's existence
@@ -268,7 +290,11 @@ void account_log_out(int client_fd, Account *acc)
     {
         printf("[-]Account does not exist!\n");
         sprintf(log_out_feedback, "%d", 1);
-        send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0);
+        if (send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
         return;
     }
 
@@ -277,7 +303,11 @@ void account_log_out(int client_fd, Account *acc)
     {
         printf("[-]Yet signed in.\n");
         sprintf(log_out_feedback, "%d", 2);
-        send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0);
+        if (send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
         return;
     }
 
@@ -291,7 +321,11 @@ void account_log_out(int client_fd, Account *acc)
             printf("[+]%s logged out.\n", username);
             sprintf(log_out_feedback, "%d", 0);
             // Send feedback to Client
-            send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0);
+            if (send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
+            }
             return;
         }
         cur = cur->next;
