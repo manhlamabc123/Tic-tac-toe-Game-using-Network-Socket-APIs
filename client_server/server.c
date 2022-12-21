@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h> // read(), write(), close()
 #include <pthread.h>
+#include <errno.h>
 #include "../exception/exception.h"
 #include "../game/game.h"
 #include "../app/app.h"
@@ -39,11 +40,12 @@ int main(int argc, char *argv[])
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_fd == -1)
     {
-        printf("[-]Socket creation failed\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
     else
         printf("[+]Socket successfully created\n");
+
     bzero(&server_address, sizeof(server_address));
 
     // assign IP, PORT
@@ -54,7 +56,7 @@ int main(int argc, char *argv[])
     // Binding newly created socket to given IP and verification
     if ((bind(socket_fd, (struct sockaddr *)&server_address, sizeof(server_address))) != 0)
     {
-        printf("[-]Socket bind failed\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
     else
@@ -63,7 +65,7 @@ int main(int argc, char *argv[])
     // Now server is ready to listen and verification
     if ((listen(socket_fd, 5)) != 0)
     {
-        printf("[-]Listen failed\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
     else
@@ -74,7 +76,7 @@ int main(int argc, char *argv[])
         connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &len);
         if (connect_fd < 0)
         {
-            printf("[-]Server accept failed\n");
+            fprintf(stderr, "[-]%s\n", strerror(errno));
             return 0;
         }
         else

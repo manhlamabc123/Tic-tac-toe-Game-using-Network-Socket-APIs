@@ -6,6 +6,7 @@
 #include <strings.h> // bzero()
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
+#include <errno.h>
 #include "../exception/exception.h"
 #include "../game/game.h"
 #include "../app/app.h"
@@ -45,7 +46,7 @@ int main(int argc, char *argv[])
 	socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socket_fd == -1)
 	{
-		printf("[-]Socket creation failed\n");
+		fprintf(stderr, "[-]%s\n", strerror(errno));
 		exit(0);
 	}
 	else
@@ -62,7 +63,7 @@ int main(int argc, char *argv[])
 	// Connect the client socket to server socket
 	if (connect(socket_fd, (struct sockaddr *)&server_address, sizeof(server_address)) != 0)
 	{
-		printf("[-]Connection with the server failed\n");
+		fprintf(stderr, "[-]%s\n", strerror(errno));
 		exit(0);
 	}
 	else
