@@ -44,14 +44,14 @@ int check_confirm_password(char *confirm_password, char *new_password)
     // Check for number and letter
     if (check_new_password(confirm_password))
     {
-        printf("Can only contains number or letter. Try again please.\n");
+        printf("[-]Can only contains number or letter. Try again please.\n");
         return 1;
     }
 
     // Check if the same password
     if (strcmp(confirm_password, new_password) != 0)
     {
-        printf("Passwords not the same.\n");
+        printf("[-]Passwords not the same.\n");
         return 1;
     }
 

@@ -125,14 +125,14 @@ goal:
     printf("Username: ");
     if (fgets(username, sizeof(username), stdin) == NULL)
     {
-        printf("Input error.\n");
+        printf("[-]Input error.\n");
         return 0;
     }
 
     // Check username
     if (check_spaces(username, sizeof(username)))
     {
-        printf("Contain white scape(s). Try again.\n");
+        printf("[-]Contain white scape(s). Try again.\n");
         goto goal;
     }
 goal1:
@@ -140,14 +140,14 @@ goal1:
     printf("Password: ");
     if (fgets(password, sizeof(password), stdin) == NULL)
     {
-        printf("Input error.\n");
+        printf("[-]Input error.\n");
         return 0;
     }
 
     // Check password
     if (check_spaces(password, sizeof(password)))
     {
-        printf("Contain white scape(s). Try again.\n");
+        printf("[-]Contain white scape(s). Try again.\n");
         goto goal1;
     }
 goal2:
@@ -155,21 +155,20 @@ goal2:
     printf("Confirm password: ");
     if (fgets(confirm_password, sizeof(confirm_password), stdin) == NULL)
     {
-        printf("Input error.\n");
+        printf("[-]Input error.\n");
         return 0;
     }
 
     // Check confirm password
     if (check_spaces(confirm_password, sizeof(confirm_password)))
     {
-        printf("Contain white scape(s). Try again.\n");
+        printf("[-]Contain white scape(s). Try again.\n");
         goto goal2;
     }
 
     // Check if confirm password and password are the same
     if (check_confirm_password(confirm_password, password))
     {
-        printf("[-]Incorrect confirm password\n");
         goto goal2;
     }
 
