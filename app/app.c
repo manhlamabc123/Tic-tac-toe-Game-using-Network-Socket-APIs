@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
 #include <pthread.h>
+#include <errno.h>
 #include "app.h"
 #include "../exception/exception.h"
 #include "../game/game.h"
@@ -93,7 +94,7 @@ void *server_app(void *arg)
 		// Get client's signal
 		if (recv(client_fd, client_signal, sizeof(client_signal), 0) < 0)
 		{
-			printf("[-]Fail to receive client message.\n");
+			fprintf(stderr, "[-]%s\n", strerror(errno));
 		}
 		else
 		{
