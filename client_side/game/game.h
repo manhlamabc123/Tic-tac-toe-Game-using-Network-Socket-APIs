@@ -1,5 +1,4 @@
 #include "../helper/helper.h"
-#define BUFFER_SIZE 1024
 
 enum STATUS
 {
@@ -43,13 +42,6 @@ typedef struct _game
 
 void play_with_bot(int, Account);
 void make_move(int *board, const int sq, const int side);
-int get_bot_move(int *board, const int side);
-int GetWinningMove(int *board, const int side);
-int GetNextBest(const int *board);
-int get_player_move(const int *board, const int side);
-int has_empty(const int *board);
 void print_board(const int *board, Account current_user);
 void initialise_board(int *board);
-
-void server_game_bot(int, Account*);
 int get_side(Game);

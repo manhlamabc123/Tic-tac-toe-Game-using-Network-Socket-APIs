@@ -116,37 +116,43 @@ Account *account_sign_up(int client_fd, Account *acc)
 {
     printf("[+]Sign up function.\n");
 
-    char username[BUFFER_SIZE];
-    char password[BUFFER_SIZE];
+    char feedback[BUFFER_SIZE];
+    Account user;
 
     // Get username from Client
-    if (recv(client_fd, username, sizeof(username), 0) < 0) // If fail
+    if (recv(client_fd, &user, sizeof(struct _Account), MSG_WAITALL) < 0) // If fail
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return NULL;
     }
-    else // If success
+
+    standardize_input(user.username, sizeof(user.username));
+    printf("[+]Client username: %s\n", user.username);
+    standardize_input(user.password, sizeof(user.password));
+    printf("[+]Client password: %s\n", user.password);
+
+    // Add account to account list
+    acc = add_account(acc, user.username, user.password); // Add account
+    if (acc == NULL)
     {
-        standardize_input(username, sizeof(username));
-        printf("[+]Client username: %s\n", username);
+        printf("[-]Fail to sign up\n");
+        sprintf(feedback, "%d", 0);
+    }
+    else
+    {
+        number_of_account++;
+        printf("[+]Sign up successful.\n");
+        sprintf(feedback, "%d", 1);
+        update_file(acc); // Update database
     }
 
-    // Get password from Client
-    if (recv(client_fd, password, sizeof(password), 0) < 0) // If fail
+    // Send feedback to Client
+    if (send(client_fd, feedback, sizeof(feedback), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return NULL;
     }
-    else // If success
-    {
-        standardize_input(password, sizeof(password));
-        printf("[+]Client password: %s\n", password);
-    }
 
-    acc = add_account(acc, username, password); // Add account
-    number_of_account++;
-    printf("[+]Successful registration.\n");
-    update_file(acc); // Update database
     return acc;
 }
 
@@ -172,40 +178,26 @@ void account_sign_in(int client_fd, Account *acc)
 {
     printf("[+]Sign in function.\n");
 
-    char username[BUFFER_SIZE];
-    char password[BUFFER_SIZE];
-    int sign_in_feedback;
-    SignInFeedback feedback;
+    char feedback[BUFFER_SIZE];
+    Account user;
 
-    // Get username from Client
-    if (recv(client_fd, username, sizeof(username), 0) < 0) // If fail
+    // Get user from Client
+    if (recv(client_fd, &user, sizeof(struct _Account), MSG_WAITALL) < 0) // If fail
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;
     }
-    else // If success
-    {
-        standardize_input(username, sizeof(username));
-        printf("[+]Client username: %s\n", username);
-    }
 
-    // Get password from Client
-    if (recv(client_fd, password, sizeof(password), 0) < 0) // If fail
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
-    else // If success
-    {
-        standardize_input(password, sizeof(password));
-        printf("[+]Client password: %s\n", password);
-    }
+    standardize_input(user.username, sizeof(user.username));
+    standardize_input(user.password, sizeof(user.password));
+    printf("[+]Client username: %s\n", user.username);
+    printf("[+]Client password: %s\n", user.password);
 
-    if (check_user(acc, username) != 0)
+    if (check_user(acc, user.username) != 0)
     {
         // Send feedback to Client
-        feedback.feedback = 1;
-        if (send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0) < 0)
+        sprintf(feedback, "%d", 1);
+        if (send(client_fd, &feedback, sizeof(feedback), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
@@ -213,11 +205,11 @@ void account_sign_in(int client_fd, Account *acc)
         return;
     }
 
-    if (check_password(acc, password) != 0)
+    if (check_password(acc, user.password) != 0)
     {
         // Send feedback to Client
-        feedback.feedback = 2;
-        if (send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0) < 0)
+        sprintf(feedback, "%d", 2);
+        if (send(client_fd, &feedback, sizeof(feedback), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
@@ -227,18 +219,17 @@ void account_sign_in(int client_fd, Account *acc)
     }
 
     // Update account list
-    printf("[+]Sign in is successful to: %s\n", username);
+    printf("[+]Sign in is successful to: %s\n", user.username);
     Account *cur = acc;
     while (cur != NULL)
     {
-        if (strcmp(cur->username, username) == 0)
+        if (strcmp(cur->username, user.username) == 0)
         {
             cur->is_signed_in = 1;
 
             // Send feedback to Client
-            feedback.feedback = 0;
-            feedback.current_user = *cur;
-            if (send(client_fd, &feedback, sizeof(struct _SignInFeedback), 0) < 0)
+            sprintf(feedback, "%d", 0);
+            if (send(client_fd, &feedback, sizeof(feedback), 0) < 0)
             {
                 fprintf(stderr, "[-]%s\n", strerror(errno));
                 return;
@@ -278,7 +269,7 @@ void account_log_out(int client_fd, Account *acc)
     char username[BUFFER_SIZE];
 
     // Get username from Client
-    if (recv(client_fd, username, sizeof(username), 0) < 0)
+    if (recv(client_fd, username, sizeof(username), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;
