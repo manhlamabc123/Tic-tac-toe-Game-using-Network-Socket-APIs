@@ -30,7 +30,6 @@ typedef struct _move
 
 typedef struct _game
 {
-    int id;
     char date[BUFFER_SIZE];
     Board board;
     Account first_player;
@@ -48,5 +47,8 @@ int get_player_move(const int *board, const int side);
 int has_empty(const int *board);
 void print_board(const int *board, Account current_user);
 void initialise_board(int *board);
-void server_game_bot(int, Account*);
+void server_game_bot(int);
 int get_side(Game);
+void find_player(int, Game*);
+int initialise_game(Game*, Account);
+void player_vs_player(int);

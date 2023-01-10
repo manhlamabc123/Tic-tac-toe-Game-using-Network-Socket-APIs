@@ -120,6 +120,7 @@ void play_with_bot(int socket_fd, Account current_user)
     struct tm tm = *localtime(&t);
     char time[BUFFER_SIZE];
     Move next_move;
+    char feedback[BUFFER_SIZE];
 
     // Get current time
     snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
@@ -141,8 +142,167 @@ void play_with_bot(int socket_fd, Account current_user)
         return;
     }
 
+    // Recv feedback from Server
+    if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Handling feedback
+    switch (atoi(feedback))
+    {
+    case 1:
+        break;
+    default:
+        printf("[-]Something wrong with server\n");
+        return;
+    }
+
     // Initialise board
     initialise_board(game.board.board);
+
+    while (1)
+    {
+        // Print board
+        print_board(game.board.board, current_user);
+
+        // Check game status
+        switch (game.status)
+        {
+        case WIN:
+            printf("\n[+]%s won - %s lost\n", game.first_player.username, game.second_player.username);
+            break;
+        case LOSE:
+            printf("\n[+]%s won - %s lost\n", game.second_player.username, game.first_player.username);
+            break;
+        case DRAW:
+            printf("\n[+]A Draw\n");
+            break;
+        default:
+            break;
+        }
+
+        if (game.status != PROCESS)
+            break;
+
+        // Get user move
+        move = get_player_move(game.board.board, side);
+        make_move(game.board.board, move, side);
+
+        // Create next move
+        next_move.account = current_user;
+        next_move.move = move;
+        game.moves[game.number_of_moves] = next_move;
+        game.number_of_moves = game.number_of_moves + 1;
+
+        // Send game to Server
+        if (send(socket_fd, &game, sizeof(struct _game), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+
+        // Recv game from Server
+        if (recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+    }
+}
+
+void find_player(int socket_fd, Account* current_user)
+{
+    char find_player_signal[BUFFER_SIZE] = "5\0";
+    char feedback[BUFFER_SIZE];
+    Game game;
+
+    // Send game bot signal to Server
+    if (send(socket_fd, find_player_signal, sizeof(find_player_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Recv feedback from Server
+    if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Handling feedback
+    switch (atoi(feedback))
+    {
+    case 1:
+        break;
+    default:
+        printf("[-]Something wrong with server\n");
+        return;
+    }
+
+    // Send current user username to Server
+    if (send(socket_fd, current_user, sizeof(struct _Account), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    printf("[+]Finding other player...\n");
+
+    // Recv game from Server
+    if (recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Send feedback to Server
+    sprintf(find_player_signal, "%d", 1);
+    if (send(socket_fd, find_player_signal, sizeof(find_player_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    play_with_player(socket_fd, *current_user, game);
+
+    return;
+}
+
+void play_with_player(int socket_fd, Account current_user, Game game)
+{
+    // Initialize variables
+    int side = NOUGHTS; // O
+    int move = 0;
+    char game_bot_signal[BUFFER_SIZE] = "6\0";
+    Move next_move;
+    char feedback[BUFFER_SIZE];
+
+    // Send game bot signal to Server
+    if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Recv feedback from Server
+    if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Handling feedback
+    switch (atoi(feedback))
+    {
+    case 1:
+        break;
+    default:
+        printf("[-]Something wrong with server\n");
+        return;
+    }
 
     while (1)
     {

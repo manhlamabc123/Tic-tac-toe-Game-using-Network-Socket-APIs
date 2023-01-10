@@ -134,7 +134,7 @@ int get_bot_move(int *board, const int side)
         return random_move;
     }
     random_move = 0;
-    
+
     int i = 0;
     for (i = 0; i < 9; ++i)
     {
@@ -162,7 +162,18 @@ int get_side(Game game)
     return -1;
 }
 
-void server_game_bot(int client_fd, Account *account)
+void print_game(Game *game)
+{
+    printf("[+]Game's date: %s\n", game->date);
+    printf("[+]Game's first player: %s\n", game->first_player.username);
+    printf("[+]Game's second player: %s\n", game->second_player.username);
+    printf("[+]Last move: %s - %d\n", game->moves[game->number_of_moves - 1].account.username, game->moves[game->number_of_moves - 1].move);
+    printf("[+]Game's Status: %d\n", game->status);
+
+    return;
+}
+
+void server_game_bot(int client_fd)
 {
     // Initialise variables
     Game game;
@@ -220,11 +231,7 @@ void server_game_bot(int client_fd, Account *account)
 
         // Print game's info
         game.second_player = bot;
-        printf("[+]Game's date: %s\n", game.date);
-        printf("[+]Game's first player: %s\n", game.first_player.username);
-        printf("[+]Game's second player: %s\n", game.second_player.username);
-        printf("[+]Last move: %s - %d\n", game.moves[game.number_of_moves - 1].account.username, game.moves[game.number_of_moves - 1].move);
-        printf("[+]Game's Status: %d\n", game.status);
+        print_game(&game);
 
         // Get bot move
         move = get_bot_move(game.board.board, side);
@@ -271,6 +278,181 @@ void server_game_bot(int client_fd, Account *account)
         {
             printf("[+]Exit to menu\n");
             break; // Exit loop
+        }
+    }
+
+    return;
+}
+
+void initialise_board(int *board)
+{
+    int i = 0;
+    for (i = 0; i < 25; ++i)
+    {
+        board[i] = BORDER;
+    }
+    for (i = 0; i < 9; ++i)
+    {
+        board[convert_to_25[i]] = EMPTY;
+    }
+}
+
+int initialise_game(Game *in_waiting_game, Account current_user)
+{
+    int return_value = 0;
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    char time[BUFFER_SIZE];
+
+    // Get current time
+    snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+
+    // Set game date
+    strcpy(in_waiting_game->date, time);
+
+    // Get first player
+    if (in_waiting_game->status == -1)
+    {
+        in_waiting_game->first_player = current_user;
+    }
+    else
+    {
+        in_waiting_game->second_player = current_user;
+        return_value = 1;
+    }
+
+    // Set game variables
+    in_waiting_game->status = PROCESS;
+    in_waiting_game->number_of_moves = 0;
+
+    // Initialise board
+    in_waiting_game->board.size = 3;
+    initialise_board(in_waiting_game->board.board);
+
+    return return_value;
+}
+
+void find_player(int client_fd, Game *in_waiting_game)
+{
+    Account current_user;
+    char feedback[BUFFER_SIZE];
+
+    // Recv current user username to Server
+    if (recv(client_fd, &current_user, sizeof(struct _Account), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Setup game state
+    if (initialise_game(in_waiting_game, current_user))
+    {
+        print_game(in_waiting_game);
+        printf("[+]Found 2 player for this room\n");
+        if (send(client_fd, in_waiting_game, sizeof(struct _game), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+        if (recv(client_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+        if(atoi(feedback) != 1)
+        {
+            printf("[-]Something wrong with Client\n");
+            return;
+        }
+
+        print_game(in_waiting_game);
+        if (send(in_waiting_game->first_player.socket_fd, in_waiting_game, sizeof(struct _game), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+        if (recv(in_waiting_game->first_player.socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+        if(atoi(feedback) != 1)
+        {
+            printf("[-]Something wrong with Client\n");
+            return;
+        }
+    }
+
+    return;
+}
+
+void player_vs_player(int client_fd)
+{
+    Game game;
+    int side;
+
+    // Recv game from Server
+    if (recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Check win-con
+    side = get_side(game);
+    if (find_three_in_a_row(game.board.board, game.moves[game.number_of_moves - 1].move, side ^ 1) == 3)
+    {
+        printf("[+]Game over\n");
+        if (side == NOUGHTS)
+        {
+            printf("[+]Second player wins\n");
+            game.status = LOSE;
+        }
+        else
+        {
+            printf("[+]First player wins\n");
+            game.status = WIN;
+        }
+    }
+    if (!has_empty(game.board.board))
+    {
+        printf("[+]Game over!\n");
+        game.status = DRAW;
+        printf("[+]It's a draw!\n");
+    }
+
+    // Check status
+    if (game.status != PROCESS)
+    {
+        // Send game to both Client
+        if (send(game.first_player.socket_fd, &game, sizeof(struct _game), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+        if (send(game.second_player.socket_fd, &game, sizeof(struct _game), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+        return;
+    }
+
+    // Send game to Client
+    if (game.first_player.socket_fd == client_fd)
+    {
+        if (send(game.second_player.socket_fd, &game, sizeof(struct _game), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+    }
+    else
+    {
+        if (send(game.first_player.socket_fd, &game, sizeof(struct _game), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
         }
     }
 

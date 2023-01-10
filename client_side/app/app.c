@@ -69,7 +69,7 @@ welcome:
 			play_with_bot(socket_fd, current_user);
 			goto menu;
 		case 2: // Play (Play with other player)
-			printf("[+]Coming soon...\n");
+			find_player(socket_fd, &current_user);
 			goto menu;
 		case 3: // Log out
 			log_out(socket_fd, current_user.username, sizeof(current_user.username));

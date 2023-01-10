@@ -33,6 +33,8 @@ int main(int argc, char *argv[])
     char feedback[BUFFER_SIZE];
     Account *acc = NULL;
     acc = read_account(acc);
+    Game in_waiting_game;
+    in_waiting_game.status = -1;
 
     if (port < 1 || port > 65535)
     {
@@ -201,7 +203,15 @@ int main(int argc, char *argv[])
                         break;
                     case 4: // play with bot signal
                         printf("[+]Client trying to play with bot.\n");
-                        server_game_bot(ufds[i].fd, acc); // Play with bot
+                        server_game_bot(ufds[i].fd); // Play with bot
+                        break;
+                    case 5:
+                        printf("[+]Client trying to find player.\n");
+                        find_player(ufds[i].fd, &in_waiting_game);
+                        break;
+                    case 6:
+                        printf("[+]Player made a move.\n");
+                        player_vs_player(ufds[i].fd);
                         break;
                     default:
                         printf("[-]Server don't understand this signal.\n");
