@@ -3,6 +3,7 @@
 typedef struct _Account {
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
+    int socket_fd;
     int is_signed_in;
     struct _Account *next;
 } Account;

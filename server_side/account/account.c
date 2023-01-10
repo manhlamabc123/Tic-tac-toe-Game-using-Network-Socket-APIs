@@ -13,21 +13,22 @@
 
 int number_of_account;
 
-Account *create_new_account(char *username, char *password)
+Account *create_new_account(char *username, char *password, int socket_fd)
 {
     Account *p = (Account *)malloc(sizeof(struct _Account));
     strcpy(p->username, username);
     strcpy(p->password, password);
+    p->socket_fd = socket_fd;
     p->is_signed_in = 0;
     p->next = NULL;
     return p;
 }
 
-Account *add_account(Account *account, char *username, char *password)
+Account *add_account(Account *account, char *username, char *password, int socket_fd)
 {
     if (account == NULL)
     {
-        Account *temp = create_new_account(username, password);
+        Account *temp = create_new_account(username, password, socket_fd);
         return temp;
     }
     if (check_user(account, username))
@@ -37,7 +38,7 @@ Account *add_account(Account *account, char *username, char *password)
         {
             cur = cur->next;
         }
-        Account *temp = create_new_account(username, password);
+        Account *temp = create_new_account(username, password, socket_fd);
         cur->next = temp;
         return account;
     }
@@ -58,12 +59,12 @@ int check_user(Account *account, char *username)
     return 1;
 }
 
-int check_password(Account *account, char *password)
+int check_password(Account *account, char* username, char *password)
 {
     Account *cur = account;
     while (cur != NULL)
     {
-        if (strcmp(cur->password, password) == 0)
+        if ((strcmp(cur->username, username) == 0) && (strcmp(cur->password, password) == 0))
         {
             return 0;
         }
@@ -102,7 +103,7 @@ Account *read_account(Account *acc)
     {
         if (fscanf(inp, "%s %s", username, password) > 0)
         {
-            acc = add_account(acc, username, password);
+            acc = add_account(acc, username, password, -1);
             number_of_account++;
         }
         else
@@ -130,9 +131,10 @@ Account *account_sign_up(int client_fd, Account *acc)
     printf("[+]Client username: %s\n", user.username);
     standardize_input(user.password, sizeof(user.password));
     printf("[+]Client password: %s\n", user.password);
+    printf("[+]Client fd: %d\n", user.socket_fd);
 
     // Add account to account list
-    acc = add_account(acc, user.username, user.password); // Add account
+    acc = add_account(acc, user.username, user.password, user.socket_fd); // Add account
     if (acc == NULL)
     {
         printf("[-]Fail to sign up\n");
@@ -205,7 +207,7 @@ void account_sign_in(int client_fd, Account *acc)
         return;
     }
 
-    if (check_password(acc, user.password) != 0)
+    if (check_password(acc, user.username, user.password) != 0)
     {
         // Send feedback to Client
         sprintf(feedback, "%d", 2);
@@ -226,6 +228,7 @@ void account_sign_in(int client_fd, Account *acc)
         if (strcmp(cur->username, user.username) == 0)
         {
             cur->is_signed_in = 1;
+            cur->socket_fd = client_fd;
 
             // Send feedback to Client
             sprintf(feedback, "%d", 0);

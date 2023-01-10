@@ -3,14 +3,15 @@
 typedef struct _Account {
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
+    int socket_fd;
     int is_signed_in;
     struct _Account *next;
 } Account;
 
-Account *create_new_account(char *username, char *password);
-Account *add_account(Account *account, char *username, char *password);
+Account *create_new_account(char *username, char *password, int);
+Account *add_account(Account *account, char *username, char *password, int);
 int check_user(Account *account, char *username);
-int check_password(Account *account, char *password);
+int check_password(Account *account, char* username, char *password);
 int check_signed_in(Account *account, char *username);
 Account *read_account(Account *account);
 Account* account_sign_up(int client_fd, Account *account);

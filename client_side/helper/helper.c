@@ -12,7 +12,7 @@
 
 int menu()
 {
-    system("clear");
+    // system("clear");
 
     char user_choice[BUFFER_SIZE];
     int choice;
@@ -197,6 +197,7 @@ confirm_password:
     // Create user with new password
     strcpy(new_user.username, username);
     strcpy(new_user.password, confirm_password);
+    new_user.socket_fd = socket_fd;
 
     // Send username & password to Server
     if (send(socket_fd, &new_user, sizeof(struct _Account), 0) < 0)
@@ -302,6 +303,7 @@ password:
     standardize_input(password, sizeof(password));
     strcpy(current_user->username, username);
     strcpy(current_user->password, password);
+    current_user->socket_fd = socket_fd;
 
     // Send current_user to Server
     if (send(socket_fd, current_user, sizeof(struct _Account), 0) < 0)
