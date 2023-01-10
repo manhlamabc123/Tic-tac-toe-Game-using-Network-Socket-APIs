@@ -1,8 +1,6 @@
 #!/bin/bash
 
-if [ ! -f "server_side/server" ]; then
-    echo "[-]Server is not ready"
-elif [ -f "client_side/client" ]; then
+if [ -f "client_side/client" ]; then
     cd client_side
     clear
     if [ -z "$1" ]
