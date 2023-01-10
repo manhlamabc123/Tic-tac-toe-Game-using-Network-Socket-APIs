@@ -3,25 +3,25 @@
 if [ -f "client_side/client" ]; then
     cd client_side
     clear
-    if [ -z "$1" ]
+    if ([ -z "$1"] & [ -z "$2"]);
     then
-        echo "[+]Port: 8888"
-        ./client 18.136.148.247 8888
+        echo "[-]IP Address and Port are required"
     else
-        echo "[+]Port: $1"
-        ./client 18.136.148.247 $1
+        echo "[+]IP Address: $1"
+        echo "[+]Port: $2"
+        ./client $1 $2
     fi
 else
     cd client_side
     make clean
     make
     clear
-    if [ -z "$1" ]
+    if ([ -z "$1"] & [ -z "$2"]);
     then
-        echo "[+]Port: 8888"
-        ./client 18.136.148.247 8888
+        echo "[-]IP Address and Port are required"
     else
-        echo "[+]Port: $1"
-        ./client 18.136.148.247 $1
+        echo "[+]IP Address: $1"
+        echo "[+]Port: $2"
+        ./client $1 $2
     fi
 fi
