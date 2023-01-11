@@ -5,8 +5,9 @@
   <ol>
     <li><a href="#about">About</a></li>
     <li><a href="#technologies">Technologies</a></li>
-    <li><a href="#how-to-run">How to run</a></li>
+    <li><a href="#how-to-run-client-&-server">How to run Client & Server</a></li>
     <li><a href="#how-to-use-ngrok">How to use Ngrok</a></li>
+    <li><a href="#documents">Documents</a></li>
   </ol>
 </details>
 
@@ -29,14 +30,56 @@
 * mysql: 8.0.31-0ubuntu0.22.04.1 for Linux on x86_64
 * ngrok: 3.1.0
 
-## How to run
+## How to set up MySQL
+
+### To install MySQL on Ubuntu
+Check Documents section for details
+
+### Create database
+```
+create database [database name]
+```
+* Feel free to change `[database name]`
+* My was `socket_programming`
+
+### Create `accounts` table
+```
+CREATE TABLE accounts(  
+    id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+    username VARCHAR(255),
+    password VARCHAR(255)
+) COMMENT '';
+```
+
+### Create `games` table
+```
+CREATE TABLE games(  
+    id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
+    date VARCHAR(255),
+    first_player VARCHAR(255),
+    second_player VARCHAR(255),
+    board_size INT,
+    moves VARCHAR(255)
+) COMMENT '';
+```
+
+### Changing Host, User, Password
+In `server_side/mysql/mysql.h` change these following
+```
+#define HOST "localhost"
+#define USER "root"
+#define PASSWORD "20194616"
+#define DATABASE "socket_programming"
+```
+
+## How to run Client & Server
 
 ### To clean up all `.o` files
 ```
 bash setup.sh
 ```
 
-### To run server
+### To run server 
 ```
 bash server.sh [port]
 ```
@@ -69,3 +112,10 @@ ngrok tcp [port]
 * Example result: `tcp://0.tcp.ap.ngrok.io:10955`
   * Use [this website](https://whatismyipaddress.com/hostname-ip), input `0.tcp.ap.ngrok.io` to get `IP Address`
   * `port` is 10955
+  
+## Documents
+* C & MySQL: [website](https://zetcode.com/db/mysqlc/)
+* Bash scripting: [youtube video](https://www.youtube.com/watch?v=SPwyp2NG-bE&t=239s) & Google search
+* Book: [UNIX Network Programming(Volume1,3rd)](https://mathcs.clarku.edu/~jbreecher/cs280/UNIX%20Network%20Programming(Volume1,3rd).pdf)
+* Ngrok: [TCP Tunnel](https://ngrok.com/docs/secure-tunnels/tunnels/tcp-tunnels)
+* MySQL: [Install on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04)
