@@ -211,6 +211,7 @@ int main(int argc, char *argv[])
                         {
                             printf("[+]Clear waiting_game\n");
                             bzero(&in_waiting_game, sizeof(struct _game));
+                            in_waiting_game.status = -1;
                         }
                         break;
                     case 6:

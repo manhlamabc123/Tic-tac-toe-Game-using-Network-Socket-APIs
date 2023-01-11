@@ -171,7 +171,7 @@ void print_board(const int *board)
     {
         if (i != 0 && i % 3 == 0)
         {
-            printf("\n\n"); 
+            printf("\n\n");
         }
         printf("%4c", pceChars[board[convert_to_25[i]]]);
     }
@@ -201,101 +201,133 @@ void server_game_bot(int client_fd)
     Move next_move;
     strcpy(bot.username, bot_name);
 
-    while (1)
+    // Receive game from Client
+    if (recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
     {
-        // Receive game from Client
-        if (recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Check win-con
+    side = get_side(game);
+    if (find_three_in_a_row(game.board.board, game.moves[game.number_of_moves - 1].move, side ^ 1) == 3)
+    {
+        printf("[+]Game over\n");
+        if (side == NOUGHTS)
         {
-            fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            printf("[+]Second player wins\n");
+            game.status = LOSE;
         }
-
-        // Check win-con
-        side = get_side(game);
-        if (find_three_in_a_row(game.board.board, game.moves[game.number_of_moves - 1].move, side ^ 1) == 3)
+        else
         {
-            printf("[+]Game over\n");
-            if (side == NOUGHTS)
-            {
-                printf("[+]Second player wins\n");
-                game.status = LOSE;
-            }
-            else
-            {
-                printf("[+]First player wins\n");
-                game.status = WIN;
-            }
+            printf("[+]First player wins\n");
+            game.status = WIN;
         }
-        if (!has_empty(game.board.board))
-        {
-            printf("[+]Game over!\n");
-            game.status = DRAW;
-            printf("[+]It's a draw!\n");
-        }
+    }
+    if (!has_empty(game.board.board))
+    {
+        printf("[+]Game over!\n");
+        game.status = DRAW;
+        printf("[+]It's a draw!\n");
+    }
 
-        // Check status
-        if (game.status != PROCESS)
-        {
-            // Send game to Client
-            if (send(client_fd, &game, sizeof(struct _game), 0) < 0)
-            {
-                fprintf(stderr, "[-]%s\n", strerror(errno));
-                return;
-            }
-            printf("[+]Exit to menu\n");
-            break; // Exit loop
-        }
-
-        // Print game's info
-        game.second_player = bot;
-        print_game(&game);
-
-        // Get bot move
-        move = get_bot_move(game.board.board, side);
-        make_move(game.board.board, move, side);
-
-        // Create next move
-        next_move.account = bot;
-        next_move.move = move;
-        game.moves[game.number_of_moves] = next_move;
-        game.number_of_moves = game.number_of_moves + 1;
-
-        // Check win-con
-        side = get_side(game);
-        if (find_three_in_a_row(game.board.board, game.moves[game.number_of_moves - 1].move, side ^ 1) == 3)
-        {
-            printf("[+]Game over\n");
-            if (side == NOUGHTS)
-            {
-                printf("[+]Second player wins\n");
-                game.status = LOSE;
-            }
-            else
-            {
-                printf("[+]First player wins\n");
-                game.status = WIN;
-            }
-        }
-        if (!has_empty(game.board.board))
-        {
-            printf("[+]Game over!\n");
-            printf("[+]It's a draw!\n");
-            game.status = DRAW;
-        }
-
+    // Check status
+    if (game.status != PROCESS)
+    {
         // Send game to Client
         if (send(client_fd, &game, sizeof(struct _game), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
         }
-
-        // Check game status
-        if (game.status != PROCESS)
+        
+        // Save game to database
+        // Connect to database
+        MYSQL *connect = connect_to_database();
+        if (connect == NULL)
         {
-            printf("[+]Exit to menu\n");
-            break; // Exit loop
+            printf("[-]Fail to connect to database\n");
+            return;
         }
+
+        // Update database
+        if (database_add_new_game(connect, game) == 0)
+        {
+            printf("[-]Fail to update database\n");
+            return;
+        }
+
+        // Close connection
+        mysql_close(connect);
+        return;
+    }
+
+    // Print game's info
+    game.second_player = bot;
+    print_game(&game);
+
+    // Get bot move
+    move = get_bot_move(game.board.board, side);
+    make_move(game.board.board, move, side);
+
+    // Create next move
+    next_move.account = bot;
+    next_move.move = move;
+    game.moves[game.number_of_moves] = next_move;
+    game.number_of_moves = game.number_of_moves + 1;
+
+    // Check win-con
+    side = get_side(game);
+    if (find_three_in_a_row(game.board.board, game.moves[game.number_of_moves - 1].move, side ^ 1) == 3)
+    {
+        printf("[+]Game over\n");
+        if (side == NOUGHTS)
+        {
+            printf("[+]Second player wins\n");
+            game.status = LOSE;
+        }
+        else
+        {
+            printf("[+]First player wins\n");
+            game.status = WIN;
+        }
+    }
+    if (!has_empty(game.board.board))
+    {
+        printf("[+]Game over!\n");
+        printf("[+]It's a draw!\n");
+        game.status = DRAW;
+    }
+
+    // Send game to Client
+    if (send(client_fd, &game, sizeof(struct _game), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Check game status
+    if (game.status != PROCESS)
+    {
+        // Save game to database
+        // Connect to database
+        MYSQL *connect = connect_to_database();
+        if (connect == NULL)
+        {
+            printf("[-]Fail to connect to database\n");
+            return;
+        }
+
+        // Update database
+        if (database_add_new_game(connect, game) == 0)
+        {
+            printf("[-]Fail to update database\n");
+            return;
+        }
+
+        // Close connection
+        mysql_close(connect);
+        return;
     }
 
     return;
@@ -314,13 +346,13 @@ void initialise_board(int *board)
     }
 }
 
-int initialise_game(Game *in_waiting_game, Account* acc, Account current_user)
+int initialise_game(Game *in_waiting_game, Account *acc, Account current_user)
 {
     int return_value = 0;
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     char time[BUFFER_SIZE];
-    Account* player;
+    Account *player;
 
     // Get current time
     snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
@@ -358,7 +390,7 @@ int initialise_game(Game *in_waiting_game, Account* acc, Account current_user)
     return return_value;
 }
 
-int find_player(int client_fd, Game *in_waiting_game, Account* acc)
+int find_player(int client_fd, Game *in_waiting_game, Account *acc)
 {
     Account current_user;
     char feedback[BUFFER_SIZE];

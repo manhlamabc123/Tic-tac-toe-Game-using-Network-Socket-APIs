@@ -133,16 +133,12 @@ int database_add_new_game(MYSQL *connect, Game game)
 {
     char query[BUFFER_SIZE * 5];
     char move[BUFFER_SIZE];
-
-    printf("[-]Debug Print\n");
     char one_move[10];
-    printf("[-]Debug Print\n");
     int player = 0;
 
-    printf("[-]Debug Print\n");
     for (int i = 0; i < game.number_of_moves; i++)
     {
-        printf("[-]Debug Print\n");
+
         if (strcmp(game.first_player.username, game.moves[i].account.username) == 0)
             player = 1;
         else
@@ -150,14 +146,14 @@ int database_add_new_game(MYSQL *connect, Game game)
 
         sprintf(one_move, "%d-%d_", player, game.moves[i].move);
 
-        printf("[+](String) One move: %s", one_move);
+        printf("[+](String) One move: %s\n", one_move);
 
         strcat(move, one_move);
 
         bzero(one_move, sizeof(one_move));
     }
 
-    printf("[+](String) Moves: %s", move);
+    printf("[+](String) Moves: %s\n", move);
 
     sprintf(query, "INSERT INTO games(date, first_player, second_player, board_size, moves) VALUES('%s', '%s', '%s', %d, '%s')", game.date, game.first_player.username, game.second_player.username, game.board.size, move);
     printf("[+]Query: %s\n", query);

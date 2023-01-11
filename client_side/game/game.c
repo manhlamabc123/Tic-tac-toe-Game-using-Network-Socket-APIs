@@ -121,31 +121,8 @@ void play_with_bot(int socket_fd, Account current_user)
     game.status = PROCESS;
     game.number_of_moves = 0;
 
-    // Send game bot signal to Server
-    if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
-
-    // Recv feedback from Server
-    if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
-
-    // Handling feedback
-    switch (atoi(feedback))
-    {
-    case 1:
-        break;
-    default:
-        printf("[-]Something wrong with server\n");
-        return;
-    }
-
     // Initialise board
+    game.board.size = 3;
     initialise_board(game.board.board);
 
     while (1)
@@ -182,12 +159,39 @@ void play_with_bot(int socket_fd, Account current_user)
         game.moves[game.number_of_moves] = next_move;
         game.number_of_moves = game.number_of_moves + 1;
 
+        // Send game bot signal to Server
+        if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+
+        // Recv feedback from Server
+        if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+
+        // Handling feedback
+        switch (atoi(feedback))
+        {
+        case 1:
+            break;
+        default:
+            printf("[-]Something wrong with server\n");
+            return;
+        }
+
         // Send game to Server
         if (send(socket_fd, &game, sizeof(struct _game), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
         }
+
+        print_board(game.board.board, current_user);
+        printf("[+]Waiting for opponent...\n");
 
         // Recv game from Server
         if (recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
