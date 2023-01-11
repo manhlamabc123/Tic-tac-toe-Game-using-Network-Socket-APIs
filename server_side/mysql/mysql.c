@@ -70,7 +70,7 @@ MYSQL *connect_to_database()
     }
 
     // Connect to database
-    if (mysql_real_connect(connect, "localhost", "root", "20194616", "socket_project", 0, NULL, 0) == NULL)
+    if (mysql_real_connect(connect, LOCAL_HOST, USER, PASSWORD, DATABASE, 0, NULL, 0) == NULL)
     {
         fprintf(stderr, "%s\n", mysql_error(connect));
         mysql_close(connect);

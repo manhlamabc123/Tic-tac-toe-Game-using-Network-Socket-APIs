@@ -1,6 +1,11 @@
 #include <mysql/mysql.h>
 #define BUFFER_SIZE 1024
 
+#define HOST "localhost"
+#define USER "root"
+#define PASSWORD "20194616"
+#define DATABASE "socket_programming"
+
 typedef struct _Account {
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
