@@ -34,7 +34,12 @@
 ## How to setup MySQL
 
 ### To install MySQL on Ubuntu
-Check Documents section for details
+Check "C & MySQL" and "MySQL" in Documents section for details
+
+### To enable MySQL API in C
+```
+sudo apt install default-libmysqlclient-dev
+```
 
 ### Create database
 ```
