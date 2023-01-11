@@ -42,6 +42,7 @@ void print_board(const int *board, Account current_user)
         }
         printf("%4c", pceChars[board[convert_to_25[i]]]);
     }
+    printf("\n");
 }
 
 int get_player_move(const int *board, const int side)
@@ -52,7 +53,7 @@ int get_player_move(const int *board, const int side)
     int move = -1;
     while (moveOk == 0)
     {
-        printf("\n[+]Please enter a move from 1 to 9: ");
+        printf("[+]Please enter a move from 1 to 9: ");
         fgets(userInput, 3, stdin);
         fflush(stdin);
 
@@ -248,6 +249,16 @@ void find_player(int socket_fd, Account *current_user)
     return;
 }
 
+int get_side(Game game, Account current_user)
+{
+    printf("[+]%s %s\n", current_user.username, game.first_player.username);
+    if (strcmp(current_user.username, game.first_player.username) == 0)
+        return NOUGHTS;
+    else
+        return CROSSES;
+    return -1;
+}
+
 void play_with_player(int socket_fd, Account current_user, Game game)
 {
     // Initialize variables
@@ -256,6 +267,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
     char game_bot_signal[BUFFER_SIZE] = "6\0";
     Move next_move;
     char feedback[BUFFER_SIZE];
+    int second_player_wait = 1;
 
     while (1)
     {
@@ -281,8 +293,24 @@ void play_with_player(int socket_fd, Account current_user, Game game)
         if (game.status != PROCESS)
             break;
 
-        // Get user move
         // Get side
+        side = get_side(game, current_user);
+        if (side == -1)
+        {
+            printf("[-]Error: get_side\n");
+            return;
+        }
+        if (side == NOUGHTS)
+            printf("[+]You go first\n");
+        else if (side == CROSSES)
+            printf("[+]You go second\n");
+
+        if (side == CROSSES && second_player_wait == 1)
+        {
+            second_player_wait--;
+            goto wait;
+        }
+
         move = get_player_move(game.board.board, side);
         make_move(game.board.board, move, side);
 
@@ -322,6 +350,9 @@ void play_with_player(int socket_fd, Account current_user, Game game)
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
         }
+
+    wait:
+        printf("[+]Waiting for opponent...\n");
 
         // Recv game from Server
         if (recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
