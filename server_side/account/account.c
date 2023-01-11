@@ -13,7 +13,7 @@
 
 int number_of_account;
 
-void print_account_info(Account* user)
+void print_account_info(Account *user)
 {
     printf("[+]Account's username: %s\n", user->username);
     printf("[+]Account's password: %s\n", user->password);
@@ -55,9 +55,21 @@ Account *read_account(Account *acc)
     char username[30];
     char password[30];
     number_of_account = 0;
+    MYSQL *connect;
 
-    MYSQL* connect = connect_to_database();
-    acc = database_read_all_accounts(connect);
+    if ((connect = connect_to_database()) == NULL)
+    {
+        printf("[-]Fail to connect to database\n");
+        return NULL;
+    }
+    if ((acc = database_read_all_accounts(connect)) == NULL)
+    {
+        printf("[-]Error: database_read_all_accounts\n");
+        return NULL;
+    }
+
+    // Close connection
+    mysql_close(connect);
 
     return acc;
 }
@@ -93,7 +105,24 @@ Account *account_sign_up(int client_fd, Account *acc)
         number_of_account++;
         printf("[+]Sign up successful.\n");
         sprintf(feedback, "%d", 1);
-        update_file(acc); // Update database
+
+        // Connect to database
+        MYSQL *connect = connect_to_database();
+        if (connect == NULL)
+        {
+            printf("[-]Fail to connect to database\n");
+            return NULL;
+        }
+
+        // Update database
+        if (database_add_new_user(connect, user.username, user.password) == 0)
+        {
+            printf("[-]Fail to update database\n");
+            return NULL;
+        }
+
+        // Close connection
+        mysql_close(connect);
     }
 
     // Send feedback to Client
