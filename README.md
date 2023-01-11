@@ -46,7 +46,7 @@ sudo apt install default-libmysqlclient-dev
 create database [database name]
 ```
 * Feel free to change `[database name]`
-* My was `socket_programming`
+* Mine was `socket_programming`
 
 ### Create `accounts` table
 ```
