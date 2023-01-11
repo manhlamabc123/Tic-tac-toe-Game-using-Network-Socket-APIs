@@ -352,6 +352,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
         }
 
     wait:
+        print_board(game.board.board, current_user);
         printf("[+]Waiting for opponent...\n");
 
         // Recv game from Server

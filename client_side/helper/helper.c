@@ -35,13 +35,13 @@ menu_choice:
         choice = atoi(user_choice);
         if (choice <= 0 || choice >= 4)
         {
-            printf("[-]Invalid choice\n[+]Try again\n");
+            printf("[-]Invalid choice\n[+]Try again: ");
             goto menu_choice;
         }
     }
     else
     {
-        printf("[-]Invalid choice\n[+]Try again\n");
+        printf("[-]Invalid choice\n[+]Try again: ");
         goto menu_choice;
     }
 
@@ -64,7 +64,7 @@ welcome_choice:
     // Check input
     if (check_yes_no_bye(user_choice))
     {
-        printf("[-]Invalid choice\n[+]Try again\n");
+        printf("[-]Invalid choice\n[+]Try again: ");
         goto welcome_choice;
     }
 
