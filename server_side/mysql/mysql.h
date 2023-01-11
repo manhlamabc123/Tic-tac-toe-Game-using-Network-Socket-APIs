@@ -4,7 +4,7 @@
 #define HOST "localhost"
 #define USER "root"
 #define PASSWORD "20194616"
-#define DATABASE "socket_programming"
+#define DATABASE "socket_project"
 
 typedef struct _Account {
     char username[BUFFER_SIZE];

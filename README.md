@@ -41,7 +41,7 @@ Check Documents section for details
 create database [database name]
 ```
 * Feel free to change `[database name]`
-* My was `socket_programming`
+* My was `socket_project`
 
 ### Create `accounts` table
 ```
