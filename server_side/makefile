@@ -1,5 +1,5 @@
-main: server.o exception.o account.o game.o
-	gcc -o server server.o account.o exception.o game.o
+main: server.o exception.o account.o game.o mysql.o
+	gcc -o server server.o account.o exception.o game.o mysql.o -lmysqlclient
 
 server.o:
 	gcc -c server.c
@@ -12,6 +12,9 @@ exception.o:
 
 game.o:
 	gcc -c game/game.c
+
+mysql.o:
+	gcc -c mysql/mysql.c
 
 clean:
 	rm -f *.o *~ server

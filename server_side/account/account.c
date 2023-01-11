@@ -23,52 +23,6 @@ void print_account_info(Account* user)
     return;
 }
 
-Account *create_new_account(char *username, char *password)
-{
-    Account *p = (Account *)malloc(sizeof(struct _Account));
-    strcpy(p->username, username);
-    strcpy(p->password, password);
-    p->socket_fd = -1;
-    p->is_signed_in = 0;
-    p->next = NULL;
-    return p;
-}
-
-Account *add_account(Account *account, char *username, char *password)
-{
-    if (account == NULL)
-    {
-        Account *temp = create_new_account(username, password);
-        return temp;
-    }
-    if (check_user(account, username))
-    {
-        Account *cur = account;
-        while (cur->next != NULL)
-        {
-            cur = cur->next;
-        }
-        Account *temp = create_new_account(username, password);
-        cur->next = temp;
-        return account;
-    }
-    return NULL;
-}
-
-int check_user(Account *account, char *username)
-{
-    Account *cur = account;
-    while (cur != NULL)
-    {
-        if (strcmp(cur->username, username) == 0)
-        {
-            return 0;
-        }
-        cur = cur->next;
-    }
-    return 1;
-}
-
 int check_password(Account *account, char *username, char *password)
 {
     Account *cur = account;
@@ -102,24 +56,9 @@ Account *read_account(Account *acc)
     char password[30];
     number_of_account = 0;
 
-    FILE *inp = fopen("data/nguoidung.txt", "r");
-    if (!inp)
-    {
-        printf("Error: Can't open this file! \n");
-        return NULL;
-    }
+    MYSQL* connect = connect_to_database();
+    acc = database_read_all_accounts(connect);
 
-    do
-    {
-        if (fscanf(inp, "%s %s", username, password) > 0)
-        {
-            acc = add_account(acc, username, password);
-            number_of_account++;
-        }
-        else
-            break;
-    } while (1);
-    fclose(inp);
     return acc;
 }
 

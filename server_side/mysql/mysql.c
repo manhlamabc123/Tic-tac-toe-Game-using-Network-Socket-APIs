@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mysql.h"
 
 void finish_with_error(MYSQL *connect)
@@ -7,6 +8,52 @@ void finish_with_error(MYSQL *connect)
     fprintf(stderr, "%s\n", mysql_error(connect));
     mysql_close(connect);
     return;
+}
+
+int check_user(Account *account, char *username)
+{
+    Account *cur = account;
+    while (cur != NULL)
+    {
+        if (strcmp(cur->username, username) == 0)
+        {
+            return 0;
+        }
+        cur = cur->next;
+    }
+    return 1;
+}
+
+Account *create_new_account(char *username, char *password)
+{
+    Account *p = (Account *)malloc(sizeof(struct _Account));
+    strcpy(p->username, username);
+    strcpy(p->password, password);
+    p->socket_fd = -1;
+    p->is_signed_in = 0;
+    p->next = NULL;
+    return p;
+}
+
+Account *add_account(Account *account, char *username, char *password)
+{
+    if (account == NULL)
+    {
+        Account *temp = create_new_account(username, password);
+        return temp;
+    }
+    if (check_user(account, username))
+    {
+        Account *cur = account;
+        while (cur->next != NULL)
+        {
+            cur = cur->next;
+        }
+        Account *temp = create_new_account(username, password);
+        cur->next = temp;
+        return account;
+    }
+    return NULL;
 }
 
 MYSQL *connect_to_database()
@@ -33,13 +80,15 @@ MYSQL *connect_to_database()
     return connect;
 }
 
-int database_read_all_accounts(MYSQL *connect)
+Account* database_read_all_accounts(MYSQL *connect)
 {
+    Account *account;
+
     // Retrieve from database
     if (mysql_query(connect, "SELECT * FROM accounts"))
     {
         finish_with_error(connect);
-        return 0;
+        return NULL;
     }
 
     // Create result to store query
@@ -47,7 +96,7 @@ int database_read_all_accounts(MYSQL *connect)
     if (result == NULL)
     {
         finish_with_error(connect);
-        return 0;
+        return NULL;
     }
 
     // Get number of fields
@@ -57,18 +106,14 @@ int database_read_all_accounts(MYSQL *connect)
     MYSQL_ROW row;
     while ((row = mysql_fetch_row(result)))
     {
-        for (int i = 1; i < num_fields; i++) // start from 1, skip ID field
-        {
-            printf("%s ", row[i] ? row[i] : "NULL");
-        }
-
-        printf("\n");
+        printf("[+]Username: %s, Password: %s\n", row[1], row[2]);
+        account = add_account(account, row[1], row[2]);
     }
 
     // Free result
     mysql_free_result(result);
 
-    return 1;
+    return account;
 }
 
 int database_add_new_user(MYSQL *connect, char *username, char* password)
