@@ -129,10 +129,13 @@ int database_add_new_user(MYSQL *connect, char *username, char *password)
     return 1;
 }
 
-void convert_move_to_string(Game game, char *move)
+int database_add_new_game(MYSQL *connect, Game game)
 {
+    char query[BUFFER_SIZE * 5];
+    char move[BUFFER_SIZE];
+
     printf("[-]Debug Print\n");
-    char one_move[BUFFER_SIZE];
+    char one_move[10];
     printf("[-]Debug Print\n");
     int player = 0;
 
@@ -155,16 +158,6 @@ void convert_move_to_string(Game game, char *move)
     }
 
     printf("[+](String) Moves: %s", move);
-
-    return;
-}
-
-int database_add_new_game(MYSQL *connect, Game game)
-{
-    char query[BUFFER_SIZE * 10];
-    char move[BUFFER_SIZE];
-
-    convert_move_to_string(game, move);
 
     sprintf(query, "INSERT INTO games(date, first_player, second_player, board_size, moves) VALUES('%s', '%s', '%s', %d, '%s')", game.date, game.first_player.username, game.second_player.username, game.board.size, move);
     printf("[+]Query: %s\n", query);
