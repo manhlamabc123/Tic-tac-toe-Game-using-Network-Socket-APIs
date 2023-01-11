@@ -166,6 +166,8 @@ void play_with_bot(int socket_fd, Account current_user)
             return;
         }
 
+        printf("[+]Loading...\n");
+
         // Recv feedback from Server
         if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
         {
@@ -215,6 +217,8 @@ void find_player(int socket_fd, Account *current_user)
         return;
     }
 
+    printf("[+]Loading...\n");
+
     // Recv feedback from Server
     if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
     {
@@ -255,7 +259,6 @@ void find_player(int socket_fd, Account *current_user)
 
 int get_side(Game game, Account current_user)
 {
-    printf("[+]%s %s\n", current_user.username, game.first_player.username);
     if (strcmp(current_user.username, game.first_player.username) == 0)
         return NOUGHTS;
     else
@@ -330,6 +333,8 @@ void play_with_player(int socket_fd, Account current_user, Game game)
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
         }
+
+        printf("[+]Loading...\n");
 
         // Recv feedback from Server
         if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)

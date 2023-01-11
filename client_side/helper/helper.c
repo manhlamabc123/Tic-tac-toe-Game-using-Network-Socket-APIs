@@ -387,16 +387,16 @@ int log_out(int socket_fd, char *username, int sizeof_username)
     switch (atoi(feedback))
     {
     case 0: // Log out successfully
-        printf("[+]%s logged out.\n", username);
+        printf("[+]%s logged out\n", username);
         return 0;
     case 1: // Account does not exist
-        printf("[-]Account does not exist!\n");
+        printf("[-]Account does not exist\n");
         return 0;
     case 2: // Account've yet signed in
-        printf("[-]Yet signed in.\n");
+        printf("[-]Yet signed in\n");
         return 0;
     default:
-        printf("[-]Undefined feedback.\n");
+        printf("[-]Undefined feedback\n");
         return 0;
     }
 
