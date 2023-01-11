@@ -358,7 +358,7 @@ int initialise_game(Game *in_waiting_game, Account* acc, Account current_user)
     return return_value;
 }
 
-void find_player(int client_fd, Game *in_waiting_game, Account* acc)
+int find_player(int client_fd, Game *in_waiting_game, Account* acc)
 {
     Account current_user;
     char feedback[BUFFER_SIZE];
@@ -367,7 +367,7 @@ void find_player(int client_fd, Game *in_waiting_game, Account* acc)
     if (recv(client_fd, &current_user, sizeof(struct _Account), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
+        return -1;
     }
 
     // Setup game state
@@ -378,17 +378,19 @@ void find_player(int client_fd, Game *in_waiting_game, Account* acc)
         if (send(client_fd, in_waiting_game, sizeof(struct _game), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            return -1;
         }
 
         if (send(in_waiting_game->first_player.socket_fd, in_waiting_game, sizeof(struct _game), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            return -1;
         }
+
+        return 1;
     }
 
-    return;
+    return 0;
 }
 
 void player_vs_player(int client_fd)
