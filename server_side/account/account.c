@@ -13,22 +13,32 @@
 
 int number_of_account;
 
-Account *create_new_account(char *username, char *password, int socket_fd)
+void print_account_info(Account* user)
+{
+    printf("[+]Account's username: %s\n", user->username);
+    printf("[+]Account's password: %s\n", user->password);
+    printf("[+]Account's socket fd: %d\n", user->socket_fd);
+    printf("[+]Account's sign_in_status: %d\n", user->is_signed_in);
+
+    return;
+}
+
+Account *create_new_account(char *username, char *password)
 {
     Account *p = (Account *)malloc(sizeof(struct _Account));
     strcpy(p->username, username);
     strcpy(p->password, password);
-    p->socket_fd = socket_fd;
+    p->socket_fd = -1;
     p->is_signed_in = 0;
     p->next = NULL;
     return p;
 }
 
-Account *add_account(Account *account, char *username, char *password, int socket_fd)
+Account *add_account(Account *account, char *username, char *password)
 {
     if (account == NULL)
     {
-        Account *temp = create_new_account(username, password, socket_fd);
+        Account *temp = create_new_account(username, password);
         return temp;
     }
     if (check_user(account, username))
@@ -38,7 +48,7 @@ Account *add_account(Account *account, char *username, char *password, int socke
         {
             cur = cur->next;
         }
-        Account *temp = create_new_account(username, password, socket_fd);
+        Account *temp = create_new_account(username, password);
         cur->next = temp;
         return account;
     }
@@ -59,7 +69,7 @@ int check_user(Account *account, char *username)
     return 1;
 }
 
-int check_password(Account *account, char* username, char *password)
+int check_password(Account *account, char *username, char *password)
 {
     Account *cur = account;
     while (cur != NULL)
@@ -103,7 +113,7 @@ Account *read_account(Account *acc)
     {
         if (fscanf(inp, "%s %s", username, password) > 0)
         {
-            acc = add_account(acc, username, password, -1);
+            acc = add_account(acc, username, password);
             number_of_account++;
         }
         else
@@ -131,10 +141,9 @@ Account *account_sign_up(int client_fd, Account *acc)
     printf("[+]Client username: %s\n", user.username);
     standardize_input(user.password, sizeof(user.password));
     printf("[+]Client password: %s\n", user.password);
-    printf("[+]Client fd: %d\n", user.socket_fd);
 
     // Add account to account list
-    acc = add_account(acc, user.username, user.password, user.socket_fd); // Add account
+    acc = add_account(acc, user.username, user.password); // Add account
     if (acc == NULL)
     {
         printf("[-]Fail to sign up\n");
@@ -207,6 +216,18 @@ void account_sign_in(int client_fd, Account *acc)
         return;
     }
 
+    if (check_signed_in(acc, user.username) != 0)
+    {
+        // Send feedback to Client
+        sprintf(feedback, "%d", 3);
+        if (send(client_fd, &feedback, sizeof(feedback), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+        return;
+    }
+
     if (check_password(acc, user.username, user.password) != 0)
     {
         // Send feedback to Client
@@ -229,6 +250,7 @@ void account_sign_in(int client_fd, Account *acc)
         {
             cur->is_signed_in = 1;
             cur->socket_fd = client_fd;
+            printf("[+]Client socket: %d\n", cur->socket_fd);
 
             // Send feedback to Client
             sprintf(feedback, "%d", 0);
@@ -244,26 +266,28 @@ void account_sign_in(int client_fd, Account *acc)
     return;
 }
 
-void search(Account *acc)
+Account *account_search(Account *acc, Account user)
 {
-    printf("----Welcome to search function.----\n");
-    char username[30];
+    printf("[+]Search account function\n");
 
-    printf("Input username: ");
-    scanf("%s", username);
-    if (check_user(acc, username) != 0)
-    {
-        printf("Account does not exist!\n");
-        return;
-    }
-
-    if (check_signed_in(acc, username) == 0)
+    if (check_signed_in(acc, user.username) == 0)
     {
         printf("Yet signed in.\n");
-        return;
+        return NULL;
     }
 
-    return;
+    Account *cur = acc;
+    while (cur != NULL)
+    {
+        if (strcmp(cur->username, user.username) == 0)
+        {
+            print_account_info(cur);
+            return cur;
+        }
+        cur = cur->next;
+    }
+
+    return NULL;
 }
 
 void account_log_out(int client_fd, Account *acc)

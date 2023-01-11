@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
                         break;
                     case 5:
                         printf("[+]Client trying to find player.\n");
-                        find_player(ufds[i].fd, &in_waiting_game);
+                        find_player(ufds[i].fd, &in_waiting_game, acc);
                         break;
                     case 6:
                         printf("[+]Player made a move.\n");

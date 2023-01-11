@@ -212,7 +212,7 @@ void play_with_bot(int socket_fd, Account current_user)
     }
 }
 
-void find_player(int socket_fd, Account* current_user)
+void find_player(int socket_fd, Account *current_user)
 {
     char find_player_signal[BUFFER_SIZE] = "5\0";
     char feedback[BUFFER_SIZE];
@@ -280,30 +280,6 @@ void play_with_player(int socket_fd, Account current_user, Game game)
     Move next_move;
     char feedback[BUFFER_SIZE];
 
-    // Send game bot signal to Server
-    if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
-
-    // Recv feedback from Server
-    if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
-
-    // Handling feedback
-    switch (atoi(feedback))
-    {
-    case 1:
-        break;
-    default:
-        printf("[-]Something wrong with server\n");
-        return;
-    }
-
     while (1)
     {
         // Print board
@@ -337,6 +313,30 @@ void play_with_player(int socket_fd, Account current_user, Game game)
         next_move.move = move;
         game.moves[game.number_of_moves] = next_move;
         game.number_of_moves = game.number_of_moves + 1;
+
+        // Send game bot signal to Server
+        if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+
+        // Recv feedback from Server
+        if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+
+        // Handling feedback
+        switch (atoi(feedback))
+        {
+        case 1:
+            break;
+        default:
+            printf("[-]Something wrong with server\n");
+            return;
+        }
 
         // Send game to Server
         if (send(socket_fd, &game, sizeof(struct _game), 0) < 0)

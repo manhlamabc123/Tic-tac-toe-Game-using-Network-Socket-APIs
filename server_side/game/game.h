@@ -49,6 +49,6 @@ void print_board(const int *board, Account current_user);
 void initialise_board(int *board);
 void server_game_bot(int);
 int get_side(Game);
-void find_player(int, Game*);
-int initialise_game(Game*, Account);
+void find_player(int, Game*, Account*);
+int initialise_game(Game*, Account*, Account);
 void player_vs_player(int);

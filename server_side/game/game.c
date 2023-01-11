@@ -297,12 +297,13 @@ void initialise_board(int *board)
     }
 }
 
-int initialise_game(Game *in_waiting_game, Account current_user)
+int initialise_game(Game *in_waiting_game, Account* acc, Account current_user)
 {
     int return_value = 0;
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     char time[BUFFER_SIZE];
+    Account* player;
 
     // Get current time
     snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
@@ -310,14 +311,22 @@ int initialise_game(Game *in_waiting_game, Account current_user)
     // Set game date
     strcpy(in_waiting_game->date, time);
 
+    // Search player using current user
+    player = account_search(acc, current_user);
+    if (player == NULL)
+    {
+        printf("[-]Cannot find this user\n");
+        return return_value;
+    }
+
     // Get first player
     if (in_waiting_game->status == -1)
     {
-        in_waiting_game->first_player = current_user;
+        in_waiting_game->first_player = *player;
     }
     else
     {
-        in_waiting_game->second_player = current_user;
+        in_waiting_game->second_player = *player;
         return_value = 1;
     }
 
@@ -332,7 +341,7 @@ int initialise_game(Game *in_waiting_game, Account current_user)
     return return_value;
 }
 
-void find_player(int client_fd, Game *in_waiting_game)
+void find_player(int client_fd, Game *in_waiting_game, Account* acc)
 {
     Account current_user;
     char feedback[BUFFER_SIZE];
@@ -345,7 +354,7 @@ void find_player(int client_fd, Game *in_waiting_game)
     }
 
     // Setup game state
-    if (initialise_game(in_waiting_game, current_user))
+    if (initialise_game(in_waiting_game, acc, current_user))
     {
         print_game(in_waiting_game);
         printf("[+]Found 2 player for this room\n");
@@ -366,6 +375,7 @@ void find_player(int client_fd, Game *in_waiting_game)
         }
 
         print_game(in_waiting_game);
+        printf("[+]First player's socket: %d\n", in_waiting_game->first_player.socket_fd);
         if (send(in_waiting_game->first_player.socket_fd, in_waiting_game, sizeof(struct _game), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
