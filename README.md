@@ -5,7 +5,8 @@
   <ol>
     <li><a href="#about">About</a></li>
     <li><a href="#technologies">Technologies</a></li>
-    <li><a href="#how-to-run-client-&-server">How to run Client & Server</a></li>
+    <li><a href="#how-to-setup-mysql">How to setup MySQL</a></li>
+    <li><a href="#how-to-run-client-and-server">How to run Client and Server</a></li>
     <li><a href="#how-to-use-ngrok">How to use Ngrok</a></li>
     <li><a href="#documents">Documents</a></li>
   </ol>
@@ -30,7 +31,7 @@
 * mysql: 8.0.31-0ubuntu0.22.04.1 for Linux on x86_64
 * ngrok: 3.1.0
 
-## How to set up MySQL
+## How to setup MySQL
 
 ### To install MySQL on Ubuntu
 Check Documents section for details
@@ -72,7 +73,7 @@ In `server_side/mysql/mysql.h` change these following
 #define DATABASE "socket_programming"
 ```
 
-## How to run Client & Server
+## How to run Client and Server
 
 ### To clean up all `.o` files
 ```
