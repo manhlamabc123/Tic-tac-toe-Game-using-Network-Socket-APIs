@@ -16,29 +16,6 @@ enum BOARD
     EMPTY
 };
 
-typedef struct _board
-{
-    int size;
-    int board[BUFFER_SIZE];
-} Board;
-
-typedef struct _move
-{
-    Account account;
-    int move;
-} Move;
-
-typedef struct _game
-{
-    char date[BUFFER_SIZE];
-    Board board;
-    Account first_player;
-    Account second_player;
-    int number_of_moves;
-    Move moves[BUFFER_SIZE];
-    int status;
-} Game;
-
 void make_move(int *board, const int sq, const int side);
 int get_bot_move(int *board, const int side);
 int get_winning_move(int *board, const int side);

@@ -59,7 +59,7 @@ Account *add_account(Account *account, char *username, char *password)
 MYSQL *connect_to_database()
 {
     // Check if MySQL is installed
-    printf("MySQL client version: %s\n", mysql_get_client_info());
+    printf("[+]MySQL client version: %s\n", mysql_get_client_info());
 
     // Create connection
     MYSQL *connect = mysql_init(NULL);
@@ -80,7 +80,7 @@ MYSQL *connect_to_database()
     return connect;
 }
 
-Account* database_read_all_accounts(MYSQL *connect)
+Account *database_read_all_accounts(MYSQL *connect)
 {
     Account *account;
 
@@ -116,11 +116,58 @@ Account* database_read_all_accounts(MYSQL *connect)
     return account;
 }
 
-int database_add_new_user(MYSQL *connect, char *username, char* password)
+int database_add_new_user(MYSQL *connect, char *username, char *password)
 {
-    char query[1024];
+    char query[BUFFER_SIZE];
+
     sprintf(query, "INSERT INTO accounts(username, password) VALUES('%s', '%s')", username, password);
-    printf("Query: %s\n", query);
+    printf("[+]Query: %s\n", query);
+    if (mysql_query(connect, query))
+    {
+        finish_with_error(connect);
+    }
+    return 1;
+}
+
+void convert_move_to_string(Game game, char *move)
+{
+    printf("[-]Debug Print\n");
+    char one_move[BUFFER_SIZE];
+    printf("[-]Debug Print\n");
+    int player = 0;
+
+    printf("[-]Debug Print\n");
+    for (int i = 0; i < game.number_of_moves; i++)
+    {
+        printf("[-]Debug Print\n");
+        if (strcmp(game.first_player.username, game.moves[i].account.username) == 0)
+            player = 1;
+        else
+            player = 2;
+
+        sprintf(one_move, "%d-%d_", player, game.moves[i].move);
+
+        printf("[+](String) One move: %s", one_move);
+
+        strcat(move, one_move);
+
+        bzero(one_move, sizeof(one_move));
+    }
+
+    printf("[+](String) Moves: %s", move);
+
+    return;
+}
+
+int database_add_new_game(MYSQL *connect, Game game)
+{
+    char query[BUFFER_SIZE * 10];
+    char move[BUFFER_SIZE];
+
+    convert_move_to_string(game, move);
+
+    sprintf(query, "INSERT INTO games(date, first_player, second_player, board_size, moves) VALUES('%s', '%s', '%s', %d, '%s')", game.date, game.first_player.username, game.second_player.username, game.board.size, move);
+    printf("[+]Query: %s\n", query);
     if (mysql_query(connect, query))
     {
         finish_with_error(connect);

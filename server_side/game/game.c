@@ -442,6 +442,25 @@ void player_vs_player(int client_fd)
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
         }
+
+        // Save game to database
+        // Connect to database
+        MYSQL *connect = connect_to_database();
+        if (connect == NULL)
+        {
+            printf("[-]Fail to connect to database\n");
+            return;
+        }
+
+        // Update database
+        if (database_add_new_game(connect, game) == 0)
+        {
+            printf("[-]Fail to update database\n");
+            return;
+        }
+
+        // Close connection
+        mysql_close(connect);
         return;
     }
 
