@@ -14,21 +14,6 @@ const int convert_to_25[9] = {
     11, 12, 13,
     16, 17, 18};
 
-int get_number_for_dir(int start_square, const int dir, const int *board, const int us)
-{
-    int found = 0;
-    while (board[start_square] != BORDER)
-    {
-        if (board[start_square] != us)
-        {
-            break;
-        }
-        found++;
-        start_square += dir;
-    }
-    return found;
-}
-
 void initialise_board(int *board)
 {
     int i = 0;
@@ -48,12 +33,12 @@ void print_board(const int *board, Account current_user)
     char pceChars[] = "OX|-";
     // system("clear");
     printf("[+]You: %s\n", current_user.username);
-    printf("[+]Board:\n"); // Change here
+    printf("[+]Board:\n");
     for (i = 0; i < 9; ++i)
     {
         if (i != 0 && i % 3 == 0)
         {
-            printf("\n\n"); //
+            printf("\n\n");
         }
         printf("%4c", pceChars[board[convert_to_25[i]]]);
     }
@@ -258,14 +243,6 @@ void find_player(int socket_fd, Account *current_user)
         return;
     }
 
-    // Send feedback to Server
-    sprintf(find_player_signal, "%d", 1);
-    if (send(socket_fd, find_player_signal, sizeof(find_player_signal), 0) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
-
     play_with_player(socket_fd, *current_user, game);
 
     return;
@@ -274,7 +251,7 @@ void find_player(int socket_fd, Account *current_user)
 void play_with_player(int socket_fd, Account current_user, Game game)
 {
     // Initialize variables
-    int side = NOUGHTS; // O
+    int side;
     int move = 0;
     char game_bot_signal[BUFFER_SIZE] = "6\0";
     Move next_move;
@@ -305,6 +282,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
             break;
 
         // Get user move
+        // Get side
         move = get_player_move(game.board.board, side);
         make_move(game.board.board, move, side);
 

@@ -30,7 +30,6 @@ typedef struct _move
 
 typedef struct _game
 {
-    int id;
     char date[BUFFER_SIZE];
     Board board;
     Account first_player;

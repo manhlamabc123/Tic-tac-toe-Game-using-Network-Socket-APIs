@@ -162,6 +162,21 @@ int get_side(Game game)
     return -1;
 }
 
+void print_board(const int *board)
+{
+    int i = 0;
+    char pceChars[] = "OX|-";
+    printf("[+]Board:\n");
+    for (i = 0; i < 9; ++i)
+    {
+        if (i != 0 && i % 3 == 0)
+        {
+            printf("\n\n"); 
+        }
+        printf("%4c", pceChars[board[convert_to_25[i]]]);
+    }
+}
+
 void print_game(Game *game)
 {
     printf("[+]Game's date: %s\n", game->date);
@@ -169,6 +184,8 @@ void print_game(Game *game)
     printf("[+]Game's second player: %s\n", game->second_player.username);
     printf("[+]Last move: %s - %d\n", game->moves[game->number_of_moves - 1].account.username, game->moves[game->number_of_moves - 1].move);
     printf("[+]Game's Status: %d\n", game->status);
+    print_board(game->board.board);
+    printf("\n");
 
     return;
 }
@@ -363,32 +380,10 @@ void find_player(int client_fd, Game *in_waiting_game, Account* acc)
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
         }
-        if (recv(client_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
-        {
-            fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
-        }
-        if(atoi(feedback) != 1)
-        {
-            printf("[-]Something wrong with Client\n");
-            return;
-        }
 
-        print_game(in_waiting_game);
-        printf("[+]First player's socket: %d\n", in_waiting_game->first_player.socket_fd);
         if (send(in_waiting_game->first_player.socket_fd, in_waiting_game, sizeof(struct _game), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
-        }
-        if (recv(in_waiting_game->first_player.socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
-        {
-            fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
-        }
-        if(atoi(feedback) != 1)
-        {
-            printf("[-]Something wrong with Client\n");
             return;
         }
     }
