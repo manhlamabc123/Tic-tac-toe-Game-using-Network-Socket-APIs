@@ -199,7 +199,7 @@ confirm_password:
     strcpy(new_user.password, confirm_password);
 
     // Send username & password to Server
-    if (send(socket_fd, &new_user, sizeof(struct _Account), 0) < 0)
+    if (send(socket_fd, &new_user, sizeof(struct _account), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
@@ -304,7 +304,7 @@ password:
     strcpy(current_user->password, password);
 
     // Send current_user to Server
-    if (send(socket_fd, current_user, sizeof(struct _Account), 0) < 0)
+    if (send(socket_fd, current_user, sizeof(struct _account), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;

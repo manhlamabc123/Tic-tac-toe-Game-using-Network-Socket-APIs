@@ -53,7 +53,7 @@ typedef struct _game
     Board board;
     Account first_player;
     Account second_player;
-    int number_of_move;
+    int number_of_moves;
     Move moves[BUFFER_SIZE];
     int status;
 } Game;

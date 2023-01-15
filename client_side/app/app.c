@@ -24,7 +24,7 @@ welcome:
 	switch (welcome()) // Welcome
 	{
 	case 'y': // Sign in
-		switch (sign_in(socket_fd, &current_user, sizeof(struct _Account)))
+		switch (sign_in(socket_fd, &current_user, sizeof(struct _account)))
 		{
 		case 1:
 			is_signed_in = 1;

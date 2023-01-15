@@ -237,7 +237,7 @@ void find_player(int socket_fd, Account *current_user)
     }
 
     // Send current user username to Server
-    if (send(socket_fd, current_user, sizeof(struct _Account), 0) < 0)
+    if (send(socket_fd, current_user, sizeof(struct _account), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;
