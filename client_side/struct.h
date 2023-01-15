@@ -10,6 +10,22 @@ enum HEADER
     EXIT_PROGRAM
 };
 
+enum STATUS
+{
+    PROCESS,
+    WIN,
+    LOSE,
+    DRAW
+};
+
+enum BOARD
+{
+    NOUGHTS, // O
+    CROSSES, // X
+    BORDER,
+    EMPTY
+};
+
 typedef struct _account
 {
     char username[BUFFER_SIZE];
