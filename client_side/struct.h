@@ -66,4 +66,5 @@ typedef struct _message
     int header;
     Account account;
     Game game;
+    char message[BUFFER_SIZE];
 } Message;
