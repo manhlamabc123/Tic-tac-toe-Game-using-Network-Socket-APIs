@@ -153,19 +153,11 @@ void update_file(Account *acc)
     fclose(inp);
 }
 
-void account_sign_in(int client_fd, Account *acc)
+void account_sign_in(int client_fd, Account *acc, Account user)
 {
     printf("[+]Sign in function.\n");
 
-    char feedback[BUFFER_SIZE];
-    Account user;
-
-    // Get user from Client
-    if (recv(client_fd, &user, sizeof(struct _account), MSG_WAITALL) < 0) // If fail
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
+    Message message;
 
     standardize_input(user.username, sizeof(user.username));
     standardize_input(user.password, sizeof(user.password));
@@ -175,8 +167,9 @@ void account_sign_in(int client_fd, Account *acc)
     if (check_user(acc, user.username) != 0)
     {
         // Send feedback to Client
-        sprintf(feedback, "%d", 1);
-        if (send(client_fd, &feedback, sizeof(feedback), 0) < 0)
+        message.header = ERROR;
+        strcpy(message.message, "Cannot find account");
+        if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
@@ -187,8 +180,9 @@ void account_sign_in(int client_fd, Account *acc)
     if (check_signed_in(acc, user.username) != 0)
     {
         // Send feedback to Client
-        sprintf(feedback, "%d", 3);
-        if (send(client_fd, &feedback, sizeof(feedback), 0) < 0)
+        message.header = ERROR;
+        strcpy(message.message, "Already signed in");
+        if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
@@ -199,13 +193,13 @@ void account_sign_in(int client_fd, Account *acc)
     if (check_password(acc, user.username, user.password) != 0)
     {
         // Send feedback to Client
-        sprintf(feedback, "%d", 2);
-        if (send(client_fd, &feedback, sizeof(feedback), 0) < 0)
+        message.header = ERROR;
+        strcpy(message.message, "Password is incorrect");
+        if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
         }
-
         return;
     }
 
@@ -221,8 +215,8 @@ void account_sign_in(int client_fd, Account *acc)
             printf("[+]Client socket: %d\n", cur->socket_fd);
 
             // Send feedback to Client
-            sprintf(feedback, "%d", 0);
-            if (send(client_fd, &feedback, sizeof(feedback), 0) < 0)
+            message.header = OK;
+            if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
             {
                 fprintf(stderr, "[-]%s\n", strerror(errno));
                 return;
