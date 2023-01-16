@@ -10,7 +10,7 @@ enum HEADER
     ERROR,
     OK,
     SIGN_IN,
-    SIGN_OUT,
+    LOG_OUT,
     SIGN_UP,
     EXIT_PROGRAM,
     PLAY_BOT,
