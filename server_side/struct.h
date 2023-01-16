@@ -12,7 +12,10 @@ enum HEADER
     SIGN_IN,
     SIGN_OUT,
     SIGN_UP,
-    EXIT_PROGRAM
+    EXIT_PROGRAM,
+    PLAY_BOT,
+    FIND_PLAYER,
+    PLAYER_MADE_MOVE
 };
 
 enum STATUS
