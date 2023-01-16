@@ -26,11 +26,11 @@ int check_user(Account *account, char *username)
 
 Account *create_new_account(char *username, char *password)
 {
-    Account *p = (Account *)malloc(sizeof(struct _Account));
+    Account *p = (Account *)malloc(sizeof(struct _account));
     strcpy(p->username, username);
     strcpy(p->password, password);
     p->socket_fd = -1;
-    p->is_signed_in = 0;
+    p->status = 0;
     p->next = NULL;
     return p;
 }

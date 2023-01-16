@@ -396,7 +396,7 @@ int find_player(int client_fd, Game *in_waiting_game, Account *acc)
     char feedback[BUFFER_SIZE];
 
     // Recv current user username to Server
-    if (recv(client_fd, &current_user, sizeof(struct _Account), MSG_WAITALL) < 0)
+    if (recv(client_fd, &current_user, sizeof(struct _account), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return -1;

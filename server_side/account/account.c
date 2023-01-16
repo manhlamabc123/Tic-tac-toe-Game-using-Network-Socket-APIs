@@ -18,7 +18,7 @@ void print_account_info(Account *user)
     printf("[+]Account's username: %s\n", user->username);
     printf("[+]Account's password: %s\n", user->password);
     printf("[+]Account's socket fd: %d\n", user->socket_fd);
-    printf("[+]Account's sign_in_status: %d\n", user->is_signed_in);
+    printf("[+]Account's sign_in_status: %d\n", user->status);
 
     return;
 }
@@ -44,7 +44,7 @@ int check_signed_in(Account *account, char *username)
     {
         if (strcmp(cur->username, username) == 0)
         {
-            return cur->is_signed_in;
+            return cur->status;
         }
         cur = cur->next;
     }
@@ -82,7 +82,7 @@ Account *account_sign_up(int client_fd, Account *acc)
     Account user;
 
     // Get username from Client
-    if (recv(client_fd, &user, sizeof(struct _Account), MSG_WAITALL) < 0) // If fail
+    if (recv(client_fd, &user, sizeof(struct _account), MSG_WAITALL) < 0) // If fail
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return NULL;
@@ -161,7 +161,7 @@ void account_sign_in(int client_fd, Account *acc)
     Account user;
 
     // Get user from Client
-    if (recv(client_fd, &user, sizeof(struct _Account), MSG_WAITALL) < 0) // If fail
+    if (recv(client_fd, &user, sizeof(struct _account), MSG_WAITALL) < 0) // If fail
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;
@@ -216,7 +216,7 @@ void account_sign_in(int client_fd, Account *acc)
     {
         if (strcmp(cur->username, user.username) == 0)
         {
-            cur->is_signed_in = 1;
+            cur->status = 1;
             cur->socket_fd = client_fd;
             printf("[+]Client socket: %d\n", cur->socket_fd);
 
@@ -303,7 +303,7 @@ void account_log_out(int client_fd, Account *acc)
     {
         if (strcmp(cur->username, username) == 0)
         {
-            cur->is_signed_in = 0;
+            cur->status = 0;
             printf("[+]%s logged out.\n", username);
             sprintf(log_out_feedback, "%d", 0);
             // Send feedback to Client

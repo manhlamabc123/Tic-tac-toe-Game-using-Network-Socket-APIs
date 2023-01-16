@@ -1,41 +1,5 @@
 #include <mysql/mysql.h>
-#define BUFFER_SIZE 1024
-
-#define HOST "localhost"
-#define USER "root"
-#define PASSWORD "20194616"
-#define DATABASE "socket_project"
-
-typedef struct _Account {
-    char username[BUFFER_SIZE];
-    char password[BUFFER_SIZE];
-    int socket_fd;
-    int is_signed_in;
-    struct _Account *next;
-} Account;
-
-typedef struct _board
-{
-    int size;
-    int board[BUFFER_SIZE];
-} Board;
-
-typedef struct _move
-{
-    Account account;
-    int move;
-} Move;
-
-typedef struct _game
-{
-    char date[BUFFER_SIZE];
-    Board board;
-    Account first_player;
-    Account second_player;
-    int number_of_moves;
-    Move moves[BUFFER_SIZE];
-    int status;
-} Game;
+#include "../struct.h"
 
 int check_user(Account *account, char *username);
 Account *create_new_account(char *username, char *password);
