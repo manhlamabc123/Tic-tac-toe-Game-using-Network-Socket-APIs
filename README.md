@@ -71,7 +71,7 @@ CREATE TABLE games(
 ```
 
 ### Changing Host, User, Password
-In `server_side/mysql/mysql.h` change these following
+In `server_side/struct.h` change these following
 ```
 #define HOST "localhost"
 #define USER "root"

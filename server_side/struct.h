@@ -1,5 +1,10 @@
 #define BUFFER_SIZE 1024
 
+#define HOST "localhost"
+#define USER "root"
+#define PASSWORD "20194616"
+#define DATABASE "socket_project"
+
 enum HEADER
 {
     ERROR,
@@ -53,7 +58,7 @@ typedef struct _game
     Board board;
     Account first_player;
     Account second_player;
-    int number_of_move;
+    int number_of_moves;
     Move moves[BUFFER_SIZE];
     int status;
 } Game;
