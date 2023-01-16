@@ -20,20 +20,20 @@ int menu()
     printf("[+]MENU:\n");
     printf("[+]1. Tutorial\n");
     printf("[+]2. Play\n");
-    printf("[+]3. Log out\n");
+    printf("[+]0. Log out\n");
 menu_choice:
     printf("[+]Your choice: ");
     if (fgets(user_choice, sizeof(user_choice), stdin) == NULL)
     {
         printf("[-]Error: fgets\n");
-        return 0;
+        return -1;
     }
 
     // Check input
     if (strlen(user_choice) <= 2)
     {
         choice = atoi(user_choice);
-        if (choice <= 0 || choice >= 4)
+        if (choice <= -1 || choice >= 3)
         {
             printf("[-]Invalid choice\n[+]Try again: ");
             goto menu_choice;
@@ -51,24 +51,37 @@ menu_choice:
 char welcome()
 {
     char user_choice[BUFFER_SIZE];
+    int choice;
 
     printf("[+]Welcome\n");
-    printf("[+]Do you have an account?(y/n/bye): ");
+    printf("[+]1. Sign in\n");
+    printf("[+]2. Sign up\n");
+    printf("[+]0. Exit\n");
 welcome_choice:
+    printf("[+]Your choice: ");
     if (fgets(user_choice, sizeof(user_choice), stdin) == NULL)
     {
         printf("[-]Error: fgets\n");
-        return 0;
+        return -1;
     }
 
     // Check input
-    if (check_yes_no_bye(user_choice))
+    if (strlen(user_choice) <= 2)
+    {
+        choice = atoi(user_choice);
+        if (choice <= -1 || choice >= 3)
+        {
+            printf("[-]Invalid choice\n[+]Try again: ");
+            goto welcome_choice;
+        }
+    }
+    else
     {
         printf("[-]Invalid choice\n[+]Try again: ");
         goto welcome_choice;
     }
 
-    return user_choice[0];
+    return choice;
 }
 
 int program_exit(int socket_fd)

@@ -17,17 +17,17 @@ void client_app(int socket_fd)
 	// Clear scene
 	system("clear");
 
+	// Variables
 	Account current_user;
-	int is_signed_in = 0;
 
 welcome:
 	switch (welcome()) // Welcome
 	{
-	case 'y': // Sign in
+	case 1: // Sign in
 		switch (sign_in(socket_fd, &current_user, sizeof(struct _account)))
 		{
 		case 1:
-			is_signed_in = 1;
+			current_user.status = 1;
 			break;
 		case 2:
 			goto welcome;
@@ -36,7 +36,7 @@ welcome:
 			return;
 		}
 		break;
-	case 'n': // Sign up
+	case 2: // Sign up
 		if (!sign_up(socket_fd))
 		{
 			printf("[-]Error: sign_up\n");
@@ -44,7 +44,7 @@ welcome:
 		}
 		goto welcome;
 		break;
-	case 'b': // Exit program
+	case 0: // Exit program
 		switch (program_exit(socket_fd))
 		{
 		case 1:
@@ -56,11 +56,11 @@ welcome:
 			return;
 		}
 	default:
-		printf("[-]Program error.\n");
+		printf("[-]Program error\n");
 		return;
 	}
 
-	if (is_signed_in) // If sign in successfully
+	if (current_user.status) // If sign in successfully
 	{
 	menu:
 		switch (menu()) // Menu
@@ -71,11 +71,11 @@ welcome:
 		case 2: // Play (Play with other player)
 			find_player(socket_fd, &current_user);
 			goto menu;
-		case 3: // Log out
+		case 0: // Log out
 			log_out(socket_fd, current_user.username, sizeof(current_user.username));
 			goto welcome;
 		default:
-			printf("[-]Program error.\n");
+			printf("[-]Program error\n");
 			goto welcome;
 		}
 	}
