@@ -21,18 +21,22 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    // Variables
     char *port_number = argv[1];
     int port = atoi(port_number);
     struct sockaddr_in server_address, client_address;
     int socket_fd, connect_fd, len = sizeof(client_address);
     bzero(&server_address, sizeof(server_address));
     bzero(&client_address, sizeof(client_address));
-    fd_set current_sockets, read_sockets;
     int socket_count = 0;
     char signal[BUFFER_SIZE];
     char feedback[BUFFER_SIZE];
+
+    // Load database
     Account *acc = NULL;
     acc = read_account(acc);
+
+    // Create game
     Game in_waiting_game;
     in_waiting_game.status = -1;
 
@@ -42,7 +46,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // socket create and verification
+    // Socket create and verification
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_fd == -1)
     {
@@ -52,7 +56,7 @@ int main(int argc, char *argv[])
     else
         printf("[+]Socket successfully created\n");
 
-    // assign IP, PORT
+    // Assign IP, PORT
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = htonl(INADDR_ANY);
     server_address.sin_port = htons(port);
