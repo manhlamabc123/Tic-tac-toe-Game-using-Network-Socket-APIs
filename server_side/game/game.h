@@ -10,6 +10,6 @@ void print_board(const int *board);
 void initialise_board(int *board);
 void server_game_bot(int);
 int get_side(Game);
-int find_player(int, Game*, Account*);
+int find_player(int, Game*, Account*, Account);
 int initialise_game(Game*, Account*, Account);
 void player_vs_player(int);

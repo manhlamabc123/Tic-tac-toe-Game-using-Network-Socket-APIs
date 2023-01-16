@@ -246,32 +246,7 @@ int sign_in(int socket_fd, Account *current_user, int sizeof_current_user)
 {
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
-    char sign_in_signal[BUFFER_SIZE] = "2\0";
-    char server_feedback[BUFFER_SIZE];
-
-    // Send sign in signal to server
-    if (send(socket_fd, sign_in_signal, sizeof(sign_in_signal), 0) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return 0;
-    }
-
-    // Recv feedback from Server
-    if (recv(socket_fd, server_feedback, sizeof(server_feedback), MSG_WAITALL) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return 0;
-    }
-
-    // Handling feedback
-    switch (atoi(server_feedback))
-    {
-    case 1:
-        break;
-    default:
-        printf("[-]Something wrong with server\n");
-        return 0;
-    }
+    Message message;
 
     printf("[+]Sign in\n");
 
@@ -310,41 +285,41 @@ password:
         goto password;
     }
 
-    // Create current_user
+    // Create Account
     standardize_input(username, sizeof(username));
     standardize_input(password, sizeof(password));
     strcpy(current_user->username, username);
     strcpy(current_user->password, password);
+    
+    // Create Message
+    message.header = SIGN_IN;
+    message.account = *current_user;
+    bzero(&(message.game), sizeof(struct _game));
+    bzero(&(message.message), sizeof(char) * BUFFER_SIZE);
 
     // Send current_user to Server
-    if (send(socket_fd, current_user, sizeof(struct _account), 0) < 0)
+    if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
 
     // Get sign in feedback
-    if (recv(socket_fd, server_feedback, sizeof(server_feedback), MSG_WAITALL) < 0)
+    if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
 
     // Handling feedback
-    switch (atoi(server_feedback))
+    switch (message.header)
     {
-    case 0: // Sign in success
+    case OK: // Sign in success
         printf("[+]Signed in successfully\n");
         printf("[+]Hello, %s\n", current_user->username);
         break;
-    case 1: // Sign in fail
-        printf("[-]Cannot find account\n");
-        return 2;
-    case 2: // Sign in fail
-        printf("[-]Wrong password\n");
-        return 2;
-    case 3: // Sign in fail
-        printf("[-]Already signed in\n");
+    case ERROR: // Sign in fail
+        printf("[-]%s\n", message.message);
         return 2;
     default: // Sign in fail
         printf("[-]Something wrong with server\n");

@@ -390,17 +390,9 @@ int initialise_game(Game *in_waiting_game, Account *acc, Account current_user)
     return return_value;
 }
 
-int find_player(int client_fd, Game *in_waiting_game, Account *acc)
+int find_player(int client_fd, Game *in_waiting_game, Account *acc, Account current_user)
 {
-    Account current_user;
     char feedback[BUFFER_SIZE];
-
-    // Recv current user username to Server
-    if (recv(client_fd, &current_user, sizeof(struct _account), MSG_WAITALL) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return -1;
-    }
 
     // Setup game state
     if (initialise_game(in_waiting_game, acc, current_user))

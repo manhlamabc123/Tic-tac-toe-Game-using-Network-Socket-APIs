@@ -29,8 +29,7 @@ int main(int argc, char *argv[])
     bzero(&server_address, sizeof(server_address));
     bzero(&client_address, sizeof(client_address));
     int socket_count = 0;
-    char signal[BUFFER_SIZE];
-    char feedback[BUFFER_SIZE];
+    Message message;
 
     // Load database
     Account *acc = NULL;
@@ -170,62 +169,52 @@ int main(int argc, char *argv[])
 
             if (ufds[i].revents & (POLLIN | POLLERR))
             {
-                // Recv client's signal
-                if (recv(ufds[i].fd, signal, sizeof(signal), MSG_WAITALL) < 0)
+                // Recv client's message
+                if (recv(ufds[i].fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
                 {
                     fprintf(stderr, "[-]%s\n", strerror(errno));
                     return 0;
                 }
 
-                // Send feedback to Client
-                sprintf(feedback, "%d", 1);
-                if (send(ufds[i].fd, feedback, sizeof(feedback), 0) < 0)
+                switch (message.header)
                 {
-                    fprintf(stderr, "[-]%s\n", strerror(errno));
+                case EXIT_PROGRAM: // Program exit signal
+                    printf("[+]Close socket: %d.\n", ufds[i].fd);
+                    close(ufds[i].fd);
+                    ufds[i].fd = -1;
                     break;
-                }
-                else
-                {
-                    switch (atoi(signal))
+                case SIGN_UP: // sign up signal
+                    printf("[+]Client trying to sign up.\n");
+                    acc = account_sign_up(ufds[i].fd, acc); // Account sign up
+                    break;
+                case SIGN_IN: // sign in signal
+                    printf("[+]Client trying to sign in.\n");
+                    account_sign_in(ufds[i].fd, acc); // Account sign in
+                    break;
+                case LOG_OUT: // log out signal
+                    printf("[+]Client trying to log out.\n");
+                    account_log_out(ufds[i].fd, acc); // Account log out
+                    break;
+                case PLAY_BOT: // play with bot signal
+                    printf("[+]Client trying to play with bot.\n");
+                    server_game_bot(ufds[i].fd); // Play with bot
+                    break;
+                case FIND_PLAYER:
+                    printf("[+]Client trying to find player.\n");
+                    if (find_player(ufds[i].fd, &in_waiting_game, acc, message.account))
                     {
-                    case 0: // Program exit signal
-                        printf("[+]Close socket: %d.\n", ufds[i].fd);
-                        close(ufds[i].fd);
-                        ufds[i].fd = -1;
-                        break;
-                    case 1: // sign up signal
-                        printf("[+]Client trying to sign up.\n");
-                        acc = account_sign_up(ufds[i].fd, acc); // Account sign up
-                        break;
-                    case 2: // sign in signal
-                        printf("[+]Client trying to sign in.\n");
-                        account_sign_in(ufds[i].fd, acc); // Account sign in
-                        break;
-                    case 3: // log out signal
-                        printf("[+]Client trying to log out.\n");
-                        account_log_out(ufds[i].fd, acc); // Account log out
-                        break;
-                    case 4: // play with bot signal
-                        printf("[+]Client trying to play with bot.\n");
-                        server_game_bot(ufds[i].fd); // Play with bot
-                        break;
-                    case 5:
-                        printf("[+]Client trying to find player.\n");
-                        if(find_player(ufds[i].fd, &in_waiting_game, acc))
-                        {
-                            printf("[+]Clear waiting_game\n");
-                            bzero(&in_waiting_game, sizeof(struct _game));
-                            in_waiting_game.status = -1;
-                        }
-                        break;
-                    case 6:
-                        printf("[+]Player made a move.\n");
-                        player_vs_player(ufds[i].fd);
-                        break;
-                    default:
-                        printf("[-]Server don't understand this signal.\n");
-                        break;
+                        printf("[+]Clear waiting_game\n");
+                        bzero(&in_waiting_game, sizeof(struct _game));
+                        in_waiting_game.status = -1;
                     }
+                    break;
+                case PLAYER_MADE_MOVE:
+                    printf("[+]Player made a move.\n");
+                    player_vs_player(ufds[i].fd);
+                    break;
+                default:
+                    printf("[-]Server don't understand this signal.\n");
+                    break;
                 }
 
                 /* no more readable descriptors */
