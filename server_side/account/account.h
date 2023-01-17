@@ -6,6 +6,6 @@ Account *read_account(Account*);
 Account* account_sign_up(int, Account*, Account);
 void account_sign_in(int, Account*, Account);
 Account* account_search(Account*, Account);
-void account_log_out(int, Account*);
+void account_log_out(int, Account*, Account);
 void free_list(Account*);
 void print_account_info(Account*);

@@ -72,7 +72,7 @@ welcome:
 			find_player(socket_fd, &current_user);
 			goto menu;
 		case 0: // Log out
-			log_out(socket_fd, current_user.username, sizeof(current_user.username));
+			log_out(socket_fd, current_user);
 			goto welcome;
 		default:
 			printf("[-]Program error\n");

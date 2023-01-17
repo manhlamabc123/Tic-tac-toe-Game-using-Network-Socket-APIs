@@ -228,25 +228,19 @@ Account *account_search(Account *acc, Account user)
     return NULL;
 }
 
-void account_log_out(int client_fd, Account *acc)
+void account_log_out(int client_fd, Account *acc, Account user)
 {
-    char log_out_feedback[BUFFER_SIZE];
-    char username[BUFFER_SIZE];
+    Message message;
 
-    // Get username from Client
-    if (recv(client_fd, username, sizeof(username), MSG_WAITALL) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
-    standardize_input(username, sizeof(username));
+    standardize_input(user.username, sizeof(user.username));
 
     // Check for Account's existence
-    if (check_user(acc, username) != 0)
+    if (check_user(acc, user.username) != 0)
     {
-        printf("[-]Account does not exist!\n");
-        sprintf(log_out_feedback, "%d", 1);
-        if (send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0) < 0)
+        printf("[-]Account does not exist\n");
+        message.header = ERROR;
+        strcpy(message.message, "Account does not exist");
+        if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
@@ -255,11 +249,12 @@ void account_log_out(int client_fd, Account *acc)
     }
 
     // Check for Account's sign in status
-    if (check_signed_in(acc, username) == 0)
+    if (check_signed_in(acc, user.username) == 0)
     {
-        printf("[-]Yet signed in.\n");
-        sprintf(log_out_feedback, "%d", 2);
-        if (send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0) < 0)
+        printf("[-]Yet signed in\n");
+        message.header = ERROR;
+        strcpy(message.message, "Yet signed in");
+        if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
@@ -271,13 +266,12 @@ void account_log_out(int client_fd, Account *acc)
     Account *cur = acc;
     while (cur != NULL)
     {
-        if (strcmp(cur->username, username) == 0)
+        if (strcmp(cur->username, user.username) == 0)
         {
             cur->status = 0;
-            printf("[+]%s logged out.\n", username);
-            sprintf(log_out_feedback, "%d", 0);
-            // Send feedback to Client
-            if (send(client_fd, log_out_feedback, sizeof(log_out_feedback), 0) < 0)
+            printf("[+]%s logged out.\n", user.username);
+            message.header = OK;
+            if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
             {
                 fprintf(stderr, "[-]%s\n", strerror(errno));
                 return;

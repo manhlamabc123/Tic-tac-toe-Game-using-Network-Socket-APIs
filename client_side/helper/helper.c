@@ -312,62 +312,39 @@ password:
     return 1;
 }
 
-int log_out(int socket_fd, char *username, int sizeof_username)
+int log_out(int socket_fd, Account current_user)
 {
-    char log_out_signal[BUFFER_SIZE] = "3\0";
-    char feedback[BUFFER_SIZE];
-
-    // Send log out signal to Server
-    if (send(socket_fd, log_out_signal, sizeof(log_out_signal), 0) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return 1;
-    }
-
-    // Receive server feedback
-    if (recv(socket_fd, feedback, sizeof(feedback), 0) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return 1;
-    }
-
-    // Handling feedback
-    switch (atoi(feedback))
-    {
-    case 1:
-        break;
-    default:
-        printf("[-]Something wrong with server\n");
-        return 0;
-    }
+    Message message;
+    // Create message
+    message.header = LOG_OUT;
+    message.account = current_user;
 
     // Get username, who is logging out
-    if (send(socket_fd, username, sizeof_username, 0) < 0)
+    if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 1;
     }
+
+    printf("[+]Loading...\n");
 
     // Receive server feedback
-    if (recv(socket_fd, feedback, sizeof(feedback), 0) < 0)
+    if (recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 1;
     }
 
-    switch (atoi(feedback))
+    switch (message.header)
     {
-    case 0: // Log out successfully
-        printf("[+]%s logged out\n", username);
-        return 0;
-    case 1: // Account does not exist
-        printf("[-]Account does not exist\n");
-        return 0;
-    case 2: // Account've yet signed in
-        printf("[-]Yet signed in\n");
+    case OK:
+        printf("[+]%s logged out\n", current_user.username);
+        break;
+    case ERROR:
+        printf("[-]%s\n", message.message);
         return 0;
     default:
-        printf("[-]Undefined feedback\n");
+        printf("[-]Something wrong with server\n");
         return 0;
     }
 

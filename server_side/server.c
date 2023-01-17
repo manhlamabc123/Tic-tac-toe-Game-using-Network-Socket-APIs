@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
                     break;
                 case LOG_OUT: // log out signal
                     printf("[+]Client trying to log out.\n");
-                    account_log_out(ufds[i].fd, acc); // Account log out
+                    account_log_out(ufds[i].fd, acc, message.account); // Account log out
                     break;
                 case PLAY_BOT: // play with bot signal
                     printf("[+]Client trying to play with bot.\n");
