@@ -126,33 +126,8 @@ int sign_up(int socket_fd)
     char username[BUFFER_SIZE];
     char password[BUFFER_SIZE];
     char confirm_password[BUFFER_SIZE];
-    char sign_up_signal[BUFFER_SIZE] = "1\0";
-    char server_feedback[BUFFER_SIZE];
     Account new_user;
-
-    // Send sign up signal to server
-    if (send(socket_fd, sign_up_signal, sizeof(sign_up_signal), 0) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return 0;
-    }
-
-    // Recv feedback from Server
-    if (recv(socket_fd, server_feedback, sizeof(server_feedback), MSG_WAITALL) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return 0;
-    }
-
-    // Handling feedback
-    switch (atoi(server_feedback))
-    {
-    case 1:
-        break;
-    default:
-        printf("[-]Something wrong with server\n");
-        return 0;
-    }
+    Message message;
 
     printf("[+]Sign up\n");
 username:
@@ -211,30 +186,36 @@ confirm_password:
     strcpy(new_user.username, username);
     strcpy(new_user.password, confirm_password);
 
+    // Create message
+    message.header = SIGN_UP;
+    message.account = new_user;
+
     // Send username & password to Server
-    if (send(socket_fd, &new_user, sizeof(struct _account), 0) < 0)
+    if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
 
+    printf("[+]Loading...\n");
+
     // Recv feedback from Server
-    if (recv(socket_fd, server_feedback, sizeof(server_feedback), MSG_WAITALL) < 0)
+    if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
 
     // Handling feedback
-    switch (atoi(server_feedback))
+    switch (message.header)
     {
-    case 0:
-        printf("[-]Fail to sign up\n");
-        return 0;
-    case 1:
+    case OK: // Sign in success
         printf("[+]Sign up successfully\n");
         break;
-    default:
+    case ERROR: // Sign in fail
+        printf("[-]%s\n", message.message);
+        return 0;
+    default: // Sign in fail
         printf("[-]Something wrong with server\n");
         return 0;
     }

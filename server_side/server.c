@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
                     break;
                 case SIGN_UP: // sign up signal
                     printf("[+]Client trying to sign up.\n");
-                    acc = account_sign_up(ufds[i].fd, acc); // Account sign up
+                    acc = account_sign_up(ufds[i].fd, acc, message.account); // Account sign up
                     break;
                 case SIGN_IN: // sign in signal
                     printf("[+]Client trying to sign in.\n");

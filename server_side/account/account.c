@@ -74,19 +74,11 @@ Account *read_account(Account *acc)
     return acc;
 }
 
-Account *account_sign_up(int client_fd, Account *acc)
+Account *account_sign_up(int client_fd, Account *acc, Account user)
 {
     printf("[+]Sign up function.\n");
 
-    char feedback[BUFFER_SIZE];
-    Account user;
-
-    // Get username from Client
-    if (recv(client_fd, &user, sizeof(struct _account), MSG_WAITALL) < 0) // If fail
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return NULL;
-    }
+    Message message;
 
     standardize_input(user.username, sizeof(user.username));
     printf("[+]Client username: %s\n", user.username);
@@ -98,13 +90,15 @@ Account *account_sign_up(int client_fd, Account *acc)
     if (acc == NULL)
     {
         printf("[-]Fail to sign up\n");
-        sprintf(feedback, "%d", 0);
+        message.header = ERROR;
+        strcpy(message.message, "Fail to sign up");
     }
     else
     {
         number_of_account++;
-        printf("[+]Sign up successful.\n");
-        sprintf(feedback, "%d", 1);
+        printf("[+]Sign up successful\n");
+        message.header = OK;
+        strcpy(message.message, "Sign up successful");
 
         // Connect to database
         MYSQL *connect = connect_to_database();
@@ -126,31 +120,13 @@ Account *account_sign_up(int client_fd, Account *acc)
     }
 
     // Send feedback to Client
-    if (send(client_fd, feedback, sizeof(feedback), 0) < 0)
+    if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return NULL;
     }
 
     return acc;
-}
-
-void update_file(Account *acc)
-{
-    FILE *inp = fopen("data/nguoidung.txt", "w+");
-    if (inp == NULL)
-    {
-        printf("Cannot open file.\n");
-        return;
-    }
-
-    Account *cur = acc;
-    while (cur != NULL)
-    {
-        fprintf(inp, "%s %s\n", cur->username, cur->password);
-        cur = cur->next;
-    }
-    fclose(inp);
 }
 
 void account_sign_in(int client_fd, Account *acc, Account user)
@@ -328,21 +304,4 @@ void free_list(Account *head)
 int check_activate_code(char *activate_code, char *correct_activate_code)
 {
     return strcmp(activate_code, correct_activate_code);
-}
-
-int change_password(Account *acc, char *username, char *new_password)
-{
-    int success = 0;
-    Account *cur = acc;
-    while (cur != NULL)
-    {
-        if (strcmp(cur->username, username) == 0)
-        {
-            strcpy(cur->password, new_password);
-            success = 1;
-        }
-        cur = cur->next;
-    }
-    update_file(acc);
-    return success;
 }
