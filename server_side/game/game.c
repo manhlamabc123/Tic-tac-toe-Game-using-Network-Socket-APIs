@@ -236,7 +236,7 @@ void server_game_bot(int client_fd, Game game)
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
         }
-        
+
         // Save game to database
         // Connect to database
         MYSQL *connect = connect_to_database();
@@ -422,17 +422,10 @@ int find_player(int client_fd, Game *in_waiting_game, Account *acc, Account curr
     return 0;
 }
 
-void player_vs_player(int client_fd)
+void player_vs_player(int client_fd, Game game)
 {
-    Game game;
     int side;
-
-    // Recv game from Server
-    if (recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
+    Message message;
 
     // Check win-con
     side = get_side(game);
@@ -457,16 +450,20 @@ void player_vs_player(int client_fd)
         printf("[+]It's a draw!\n");
     }
 
+    // Create message
+    message.header = OK;
+    message.game = game;
+
     // Check status
     if (game.status != PROCESS)
     {
         // Send game to both Client
-        if (send(game.first_player.socket_fd, &game, sizeof(struct _game), 0) < 0)
+        if (send(game.first_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
         }
-        if (send(game.second_player.socket_fd, &game, sizeof(struct _game), 0) < 0)
+        if (send(game.second_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;

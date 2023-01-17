@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
                     break;
                 case PLAYER_MADE_MOVE:
                     printf("[+]Player made a move.\n");
-                    player_vs_player(ufds[i].fd);
+                    player_vs_player(ufds[i].fd, message.game);
                     break;
                 default:
                     printf("[-]Server don't understand this signal.\n");
