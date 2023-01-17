@@ -87,8 +87,7 @@ welcome_choice:
 int program_exit(int socket_fd)
 {
     char user_choice[BUFFER_SIZE];
-    char program_exit_signal[BUFFER_SIZE] = "0\0"; // 0 = exit
-    char server_feedback[BUFFER_SIZE];
+    Message message;
 
     printf("[+]Exit\n");
     printf("[+]Do you really really want to exit?(y/n): ");
@@ -110,8 +109,11 @@ user_choice:
     if (user_choice[0] != 'y')
         return 2;
 
+    // Create message
+    message.header = EXIT_PROGRAM;
+
     // Send exit program signal to Server
-    if (send(socket_fd, program_exit_signal, sizeof(program_exit_signal), 0) < 0)
+    if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
