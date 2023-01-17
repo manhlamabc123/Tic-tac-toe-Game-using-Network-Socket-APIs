@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
                     break;
                 case SIGN_IN: // sign in signal
                     printf("[+]Client trying to sign in.\n");
-                    account_sign_in(ufds[i].fd, acc); // Account sign in
+                    account_sign_in(ufds[i].fd, acc, message.account); // Account sign in
                     break;
                 case LOG_OUT: // log out signal
                     printf("[+]Client trying to log out.\n");
