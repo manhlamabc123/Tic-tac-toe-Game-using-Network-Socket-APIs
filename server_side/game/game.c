@@ -392,20 +392,25 @@ int initialise_game(Game *in_waiting_game, Account *acc, Account current_user)
 
 int find_player(int client_fd, Game *in_waiting_game, Account *acc, Account current_user)
 {
-    char feedback[BUFFER_SIZE];
+    Message message;
 
     // Setup game state
     if (initialise_game(in_waiting_game, acc, current_user))
     {
         print_game(in_waiting_game);
         printf("[+]Found 2 player for this room\n");
-        if (send(client_fd, in_waiting_game, sizeof(struct _game), 0) < 0)
+
+        // Create message
+        message.header = OK;
+        message.game = *in_waiting_game;
+
+        if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return -1;
         }
 
-        if (send(in_waiting_game->first_player.socket_fd, in_waiting_game, sizeof(struct _game), 0) < 0)
+        if (send(in_waiting_game->first_player.socket_fd, &message.message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return -1;

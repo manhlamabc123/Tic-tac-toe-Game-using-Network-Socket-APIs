@@ -193,38 +193,14 @@ void play_with_bot(int socket_fd, Account current_user)
 
 void find_player(int socket_fd, Account *current_user)
 {
-    char find_player_signal[BUFFER_SIZE] = "5\0";
-    char feedback[BUFFER_SIZE];
-    Game game;
+    Message message;
 
-    // Send game bot signal to Server
-    if (send(socket_fd, find_player_signal, sizeof(find_player_signal), 0) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
-
-    printf("[+]Loading...\n");
-
-    // Recv feedback from Server
-    if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
-
-    // Handling feedback
-    switch (atoi(feedback))
-    {
-    case 1:
-        break;
-    default:
-        printf("[-]Something wrong with server\n");
-        return;
-    }
+    // Create message
+    message.header = FIND_PLAYER;
+    message.account = *current_user;
 
     // Send current user username to Server
-    if (send(socket_fd, current_user, sizeof(struct _account), 0) < 0)
+    if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;
@@ -233,13 +209,23 @@ void find_player(int socket_fd, Account *current_user)
     printf("[+]Finding other player...\n");
 
     // Recv game from Server
-    if (recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
+    if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;
     }
 
-    play_with_player(socket_fd, *current_user, game);
+    // Handling message
+    switch (message.header)
+    {
+    case OK:
+        break;
+    default:
+        printf("[-]Disconnected from the server\n");
+        return;
+    }
+
+    play_with_player(socket_fd, *current_user, message.game);
 
     return;
 }
