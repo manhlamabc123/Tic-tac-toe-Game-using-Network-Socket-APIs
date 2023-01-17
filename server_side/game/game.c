@@ -190,23 +190,16 @@ void print_game(Game *game)
     return;
 }
 
-void server_game_bot(int client_fd)
+void server_game_bot(int client_fd, Game game)
 {
     // Initialise variables
-    Game game;
     int move;
     int side;
     char bot_name[BUFFER_SIZE] = "bot\0";
     Account bot;
     Move next_move;
     strcpy(bot.username, bot_name);
-
-    // Receive game from Client
-    if (recv(client_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
-    {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
-    }
+    Message message;
 
     // Check win-con
     side = get_side(game);
@@ -234,8 +227,11 @@ void server_game_bot(int client_fd)
     // Check status
     if (game.status != PROCESS)
     {
+        message.header = OK;
+        message.game = game;
+
         // Send game to Client
-        if (send(client_fd, &game, sizeof(struct _game), 0) < 0)
+        if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
@@ -299,8 +295,12 @@ void server_game_bot(int client_fd)
         game.status = DRAW;
     }
 
+    // Create message
+    message.header = OK;
+    message.game = game;
+
     // Send game to Client
-    if (send(client_fd, &game, sizeof(struct _game), 0) < 0)
+    if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;

@@ -100,13 +100,12 @@ void play_with_bot(int socket_fd, Account current_user)
     // Initialize variables
     int side = NOUGHTS; // O
     int move = 0;
-    char game_bot_signal[BUFFER_SIZE] = "4\0";
     Game game;
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     char time[BUFFER_SIZE];
     Move next_move;
-    char feedback[BUFFER_SIZE];
+    Message message;
 
     // Get current time
     snprintf(time, sizeof(time), "%d-%02d-%02d %02d:%02d:%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
@@ -159,34 +158,12 @@ void play_with_bot(int socket_fd, Account current_user)
         game.moves[game.number_of_moves] = next_move;
         game.number_of_moves = game.number_of_moves + 1;
 
+        // Create message
+        message.header = PLAY_BOT;
+        message.game = game;
+
         // Send game bot signal to Server
-        if (send(socket_fd, game_bot_signal, sizeof(game_bot_signal), 0) < 0)
-        {
-            fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
-        }
-
-        printf("[+]Loading...\n");
-
-        // Recv feedback from Server
-        if (recv(socket_fd, feedback, sizeof(feedback), MSG_WAITALL) < 0)
-        {
-            fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
-        }
-
-        // Handling feedback
-        switch (atoi(feedback))
-        {
-        case 1:
-            break;
-        default:
-            printf("[-]Something wrong with server\n");
-            return;
-        }
-
-        // Send game to Server
-        if (send(socket_fd, &game, sizeof(struct _game), 0) < 0)
+        if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
@@ -195,10 +172,20 @@ void play_with_bot(int socket_fd, Account current_user)
         print_board(game.board.board, current_user);
         printf("[+]Waiting for opponent...\n");
 
-        // Recv game from Server
-        if (recv(socket_fd, &game, sizeof(struct _game), MSG_WAITALL) < 0)
+        // Recv feedback from Server
+        if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+
+        // Handling message
+        switch (message.header)
+        {
+        case OK:
+            break;
+        default:
+            printf("[-]Disconnected from the server\n");
             return;
         }
     }

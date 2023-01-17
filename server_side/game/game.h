@@ -8,7 +8,7 @@ int get_player_move(const int *board, const int side);
 int has_empty(const int *board);
 void print_board(const int *board);
 void initialise_board(int *board);
-void server_game_bot(int);
+void server_game_bot(int, Game);
 int get_side(Game);
 int find_player(int, Game*, Account*, Account);
 int initialise_game(Game*, Account*, Account);

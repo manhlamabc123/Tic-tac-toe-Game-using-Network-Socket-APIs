@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
                     break;
                 case PLAY_BOT: // play with bot signal
                     printf("[+]Client trying to play with bot.\n");
-                    server_game_bot(ufds[i].fd); // Play with bot
+                    server_game_bot(ufds[i].fd, message.game); // Play with bot
                     break;
                 case FIND_PLAYER:
                     printf("[+]Client trying to find player.\n");
