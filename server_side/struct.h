@@ -1,4 +1,4 @@
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 256
 
 #define HOST "localhost"
 #define USER "root"

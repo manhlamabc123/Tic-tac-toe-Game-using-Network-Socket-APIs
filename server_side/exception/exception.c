@@ -2,7 +2,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-#define BUFFER_SIZE 1024
 
 int check_spaces(char *string, int length)
 {
@@ -44,25 +43,25 @@ int check_confirm_password(char *confirm_password, char *new_password)
     // Check for number and letter
     if (check_new_password(confirm_password))
     {
-        printf("Can only contains number or letter. Try again please.\n");
+        printf("[-]Can only contains number or letter. Try again please.\n");
         return 1;
     }
 
     // Check if the same password
     if (strcmp(confirm_password, new_password) != 0)
     {
-        printf("Passwords not the same.\n");
+        printf("[-]Passwords not the same.\n");
         return 1;
     }
 
     return 0;
 }
 
-int check_yes_no_bye(char *string)
+int check_yes_no_bye(char *string, int size)
 {
     char bye[] = "bye\0";
 
-    standardize_input(string, BUFFER_SIZE);
+    standardize_input(string, size);
     if (strlen(string) > 1)
     {
         if (strcmp(string, bye) != 0)
@@ -76,9 +75,9 @@ int check_yes_no_bye(char *string)
     return 0;
 }
 
-int check_yes_no(char *string)
+int check_yes_no(char *string, int size)
 {
-    standardize_input(string, BUFFER_SIZE);
+    standardize_input(string, size);
 
     if (strlen(string) > 2)
         return 1;

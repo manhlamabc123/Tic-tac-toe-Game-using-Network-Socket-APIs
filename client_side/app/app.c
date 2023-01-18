@@ -9,7 +9,6 @@
 #include <pthread.h>
 #include <errno.h>
 #include "app.h"
-#include "../exception/exception.h"
 #include "../game/game.h"
 
 void client_app(int socket_fd)

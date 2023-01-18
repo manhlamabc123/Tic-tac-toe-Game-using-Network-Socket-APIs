@@ -7,10 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
 #include <errno.h>
-#include "exception/exception.h"
-#include "game/game.h"
 #include "app/app.h"
-#define BUFFER_SIZE 1024
 
 int main(int argc, char *argv[])
 {

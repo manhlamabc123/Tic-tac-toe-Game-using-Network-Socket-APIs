@@ -100,7 +100,7 @@ user_choice:
     }
 
     // Check user's input
-    if (check_yes_no(user_choice))
+    if (check_yes_no(user_choice, sizeof(user_choice)))
     {
         printf("[-]Invalid choice\n[+]Again please: ");
         goto user_choice;
