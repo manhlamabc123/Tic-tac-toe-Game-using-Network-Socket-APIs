@@ -7,6 +7,7 @@ int get_next_best(const int *board);
 int get_player_move(const int *board, const int side);
 int has_empty(const int *board);
 void print_board(const int *board);
+void print_game(Game *game);
 void initialise_board(int *board);
 void server_game_bot(int, Game);
 int get_side(Game);

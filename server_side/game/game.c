@@ -192,6 +192,7 @@ void print_game(Game *game)
 
 void server_game_bot(int client_fd, Game game)
 {
+    print_game(&(game));
     // Initialise variables
     int move;
     int side;
