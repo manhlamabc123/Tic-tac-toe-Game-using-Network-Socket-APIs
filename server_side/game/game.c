@@ -192,7 +192,6 @@ void print_game(Game *game)
 
 void server_game_bot(int client_fd, Game game)
 {
-    print_game(&(game));
     // Initialise variables
     int move;
     int side;
@@ -411,7 +410,7 @@ int find_player(int client_fd, Game *in_waiting_game, Account *acc, Account curr
             return -1;
         }
 
-        if (send(in_waiting_game->first_player.socket_fd, &message.message, sizeof(struct _message), 0) < 0)
+        if (send(in_waiting_game->first_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return -1;
@@ -494,7 +493,7 @@ void player_vs_player(int client_fd, Game game)
     // Send game to Client
     if (game.first_player.socket_fd == client_fd)
     {
-        if (send(game.second_player.socket_fd, &game, sizeof(struct _game), 0) < 0)
+        if (send(game.second_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;
@@ -502,7 +501,7 @@ void player_vs_player(int client_fd, Game game)
     }
     else
     {
-        if (send(game.first_player.socket_fd, &game, sizeof(struct _game), 0) < 0)
+        if (send(game.first_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return;

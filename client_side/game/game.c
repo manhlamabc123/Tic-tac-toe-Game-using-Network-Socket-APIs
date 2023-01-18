@@ -183,6 +183,7 @@ void play_with_bot(int socket_fd, Account current_user)
         switch (message.header)
         {
         case OK:
+            game = message.game;
             break;
         default:
             printf("[-]Disconnected from the server\n");
@@ -325,6 +326,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
         switch (message.header)
         {
         case OK:
+            game = message.game;
             break;
         default:
             printf("[-]Disconnected from the server\n");
