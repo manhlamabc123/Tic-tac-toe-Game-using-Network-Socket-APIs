@@ -227,10 +227,11 @@ void server_game_bot(int client_fd, Game game)
     // Check status
     if (game.status != PROCESS)
     {
+        // Create message
         message.header = OK;
         message.game = game;
 
-        // Send game to Client
+        // Send message to Client
         if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));

@@ -200,7 +200,7 @@ void find_player(int socket_fd, Account *current_user)
     message.header = FIND_PLAYER;
     message.account = *current_user;
 
-    // Send current user username to Server
+    // Send message to Server
     if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
@@ -304,7 +304,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
         message.header = PLAYER_MADE_MOVE;
         message.game = game;
 
-        // Send game bot signal to Server
+        // Send message to Server
         if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
