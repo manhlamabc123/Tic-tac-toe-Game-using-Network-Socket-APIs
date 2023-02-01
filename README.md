@@ -94,7 +94,7 @@ bash server.sh [port]
 * Default port is 8888
 * You don't have to run this if the server is already running on other machine
 
-### To run client
+### To run client without Docker
 ```
 bash client.sh [IP Address] [port]
 ```
@@ -116,11 +116,9 @@ docker container run -it socket-client bash
 ```
 ./client [IP Address] [port]
 ```
-  * For local:
-    * Linux: use `ifconfig`, lock for `docker0`, `[IP Address]` is `docker0`'s inet
-    * Windows, MacOS: use `docker.for.win` or `docker.for.mac` for `[IP Address]`
-    * `[port]` default to `8888`
-  * For Ngrok: check below
+* If you are going to specify `IP Address` or `port`, you need to specify both
+* Defaul IP Address and port are: 127.0.0.1 8888
+* To connect to server, you need to specify both `IP Address` and `port`
 
 ## How to use ngrok
 
