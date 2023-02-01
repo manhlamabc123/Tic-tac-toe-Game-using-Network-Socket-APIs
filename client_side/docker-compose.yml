@@ -1,0 +1,6 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: "host"
