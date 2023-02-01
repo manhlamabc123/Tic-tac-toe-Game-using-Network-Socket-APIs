@@ -110,7 +110,7 @@ docker compose build
 ```
 * Run container in bash mode
 ```
-docker container run -it client_side-client bash
+docker container run -it socket-client bash
 ```
 * Run client
 ```
