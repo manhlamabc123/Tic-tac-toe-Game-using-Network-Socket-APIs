@@ -162,10 +162,11 @@ int main(int argc, char *argv[])
             if (ufds[i].fd < 0)
                 continue;
 
-            printf("[+]fd=%d; events: %s%s%s\n", ufds[i].fd,
+            printf("[+]fd = %d; events: %s%s%s\n", ufds[i].fd,
                    (ufds[i].revents & POLLIN) ? "POLLIN " : "",
                    (ufds[i].revents & POLLHUP) ? "POLLHUP " : "",
-                   (ufds[i].revents & POLLERR) ? "POLLERR " : "");
+                   (ufds[i].revents & POLLERR) ? "POLLERR " : "",
+                   (ufds[i].revents & POLLNVAL) ? "POLLERR " : "");
 
             if (ufds[i].revents & (POLLIN | POLLERR))
             {
@@ -213,7 +214,9 @@ int main(int argc, char *argv[])
                     player_vs_player(ufds[i].fd, message.game);
                     break;
                 default:
-                    printf("[-]Server don't understand this signal.\n");
+                    printf("[-]Server don't understand this signal: %d\n", message.header);
+                    close(ufds[i].fd);
+                    ufds[i].fd = -1;
                     break;
                 }
 
