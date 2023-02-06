@@ -168,7 +168,15 @@ int main(int argc, char *argv[])
                    (ufds[i].revents & POLLERR) ? "POLLERR " : "",
                    (ufds[i].revents & POLLNVAL) ? "POLLERR " : "");
 
-            if (ufds[i].revents & (POLLIN | POLLERR))
+            if (ufds[i].revents & (POLLHUP | POLLERR))
+            {
+                close(ufds[i].fd);
+                ufds[i].fd = -1;
+                printf("[-]Client disconnected\n");
+                continue;
+            }
+
+            if (ufds[i].revents & (POLLIN))
             {
                 // Recv client's message
                 if (recv(ufds[i].fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
