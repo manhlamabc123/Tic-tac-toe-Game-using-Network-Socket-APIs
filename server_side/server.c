@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
             if (ufds[i].fd < 0)
                 continue;
 
-            printf("[+]fd = %d; events: %s%s%s\n", ufds[i].fd,
+            printf("[+]fd = %d; events: %s%s%s%s\n", ufds[i].fd,
                    (ufds[i].revents & POLLIN) ? "POLLIN " : "",
                    (ufds[i].revents & POLLHUP) ? "POLLHUP " : "",
                    (ufds[i].revents & POLLERR) ? "POLLERR " : "",
