@@ -39,7 +39,6 @@ welcome:
 		switch (sign_up(socket_fd))
 		{
 		case 1:
-			break;
 		case 2:
 			goto welcome;
 		default:
