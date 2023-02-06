@@ -216,7 +216,7 @@ confirm_password:
         break;
     case ERROR: // Sign in fail
         printf("[-]%s\n", message.message);
-        return 0;
+        return 2;
     default: // Sign in fail
         printf("[-]Something wrong with server\n");
         return 0;

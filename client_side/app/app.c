@@ -36,12 +36,16 @@ welcome:
 		}
 		break;
 	case 2: // Sign up
-		if (!sign_up(socket_fd))
+		switch (sign_up(socket_fd))
 		{
+		case 1:
+			break;
+		case 2:
+			goto welcome;
+		default:
 			printf("[-]Error: sign_up\n");
 			return;
 		}
-		goto welcome;
 		break;
 	case 0: // Exit program
 		switch (program_exit(socket_fd))

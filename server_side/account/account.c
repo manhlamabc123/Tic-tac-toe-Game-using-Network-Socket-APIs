@@ -84,6 +84,19 @@ Account *account_sign_up(int client_fd, Account *acc, Account user)
     standardize_input(user.password, sizeof(user.password));
     printf("[+]Client password: %s\n", user.password);
 
+    if (check_user(acc, user.username) == 0)
+    {
+        // Send feedback to Client
+        message.header = ERROR;
+        strcpy(message.message, "Account already existed");
+        if (send(client_fd, &message, sizeof(struct _message), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return NULL;
+        }
+        return NULL;
+    }
+
     // Add account to account list
     acc = add_account(acc, user.username, user.password); // Add account
     if (acc == NULL)
