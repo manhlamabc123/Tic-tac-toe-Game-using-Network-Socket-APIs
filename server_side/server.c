@@ -174,10 +174,10 @@ int main(int argc, char *argv[])
             if ((ufds[i].revents & (POLLHUP | POLLERR)) || ((ufds[i].revents & (POLLIN)) && (recv(ufds[i].fd, &message, 1, MSG_PEEK) == 0)))
             {
                 Game *current_room = search_room_by_fd(rooms, &(ufds[i].fd));
-                print_game(current_room);
 
                 if (current_room != NULL)
                 {
+                    print_game(current_room);
                     current_room->status = DISCONNECTED;
 
                     message.header = ERROR;
