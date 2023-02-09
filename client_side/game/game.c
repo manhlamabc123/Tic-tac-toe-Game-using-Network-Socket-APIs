@@ -328,8 +328,12 @@ void play_with_player(int socket_fd, Account current_user, Game game)
         case OK:
             game = message.game;
             break;
-        case DISCONNECTED:
-            printf("[-]Opponent disconnected\n");
+        case ERROR:
+            if (message.game.status == DISCONNECTED)
+            {
+                printf("[-]Opponent disconnected\n");
+                printf("[+]Game's record will not be saved\n");
+            }
             return;
         default:
             printf("[-]Disconnected from the server\n");
