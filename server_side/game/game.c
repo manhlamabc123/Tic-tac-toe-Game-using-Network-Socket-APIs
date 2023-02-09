@@ -362,7 +362,7 @@ int initialise_game(Game *in_waiting_game, Account *acc, Account current_user)
     strcpy(in_waiting_game->date, time);
 
     // Search player using current user
-    player = account_search(acc, current_user);
+    player = account_search_by_account(acc, current_user);
     if (player == NULL)
     {
         printf("[-]Cannot find this user\n");

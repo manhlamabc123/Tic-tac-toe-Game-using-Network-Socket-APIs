@@ -216,9 +216,9 @@ void account_sign_in(int client_fd, Account *acc, Account user)
     return;
 }
 
-Account *account_search(Account *acc, Account user)
+Account *account_search_by_account(Account *acc, Account user)
 {
-    printf("[+]Search account function\n");
+    printf("[+]Search account function by Account\n");
 
     if (check_signed_in(acc, user.username) == 0)
     {
@@ -310,4 +310,22 @@ void free_list(Account *head)
 int check_activate_code(char *activate_code, char *correct_activate_code)
 {
     return strcmp(activate_code, correct_activate_code);
+}
+
+Account* account_search_by_socketfd(Account* acc, int socket_fd)
+{
+    printf("[+]Search account function by socketfd\n");
+
+    Account *cur = acc;
+    while (cur != NULL)
+    {
+        if (cur->socket_fd == socket_fd)
+        {
+            print_account_info(cur);
+            return cur;
+        }
+        cur = cur->next;
+    }
+
+    return NULL;
 }

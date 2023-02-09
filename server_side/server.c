@@ -202,6 +202,9 @@ int main(int argc, char *argv[])
                     print_rooms(rooms);
                 }
 
+                Account* current_user = account_search_by_socketfd(acc, ufds[i].fd);
+                account_log_out(ufds[i].fd, acc, *current_user);
+
                 close(ufds[i].fd);
                 ufds[i].fd = -1;
                 printf("[-]Client disconnected\n");
