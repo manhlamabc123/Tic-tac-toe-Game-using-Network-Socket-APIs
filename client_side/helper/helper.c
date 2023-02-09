@@ -21,8 +21,8 @@ int menu()
     printf("[+]1. Tutorial\n");
     printf("[+]2. Play\n");
     printf("[+]0. Log out\n");
-menu_choice:
     printf("[+]Your choice: ");
+menu_choice:
     if (fgets(user_choice, sizeof(user_choice), stdin) == NULL)
     {
         printf("[-]Error: fgets\n");
@@ -57,8 +57,8 @@ char welcome()
     printf("[+]1. Sign in\n");
     printf("[+]2. Sign up\n");
     printf("[+]0. Exit\n");
-welcome_choice:
     printf("[+]Your choice: ");
+welcome_choice:
     if (fgets(user_choice, sizeof(user_choice), stdin) == NULL)
     {
         printf("[-]Error: fgets\n");

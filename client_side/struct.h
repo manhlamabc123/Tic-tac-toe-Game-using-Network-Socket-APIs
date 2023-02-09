@@ -18,7 +18,9 @@ enum STATUS
     PROCESS,
     WIN,
     LOSE,
-    DRAW
+    DRAW,
+    DISCONNECTED,
+    WAITING
 };
 
 enum BOARD
@@ -59,6 +61,7 @@ typedef struct _game
     int number_of_moves;
     Move moves[BUFFER_SIZE];
     int status;
+    struct _game* next;
 } Game;
 
 typedef struct _message

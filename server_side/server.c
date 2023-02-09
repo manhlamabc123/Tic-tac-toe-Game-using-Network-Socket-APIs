@@ -10,7 +10,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <poll.h>
-#include "game/game.h"
+#include "room/room.h"
 
 int main(int argc, char *argv[])
 {
@@ -38,6 +38,9 @@ int main(int argc, char *argv[])
     // Create game
     Game in_waiting_game;
     in_waiting_game.status = -1;
+
+    // Create rooms
+    Game *rooms = NULL;
 
     if (port < 1 || port > 65535)
     {
@@ -170,6 +173,25 @@ int main(int argc, char *argv[])
 
             if (ufds[i].revents & (POLLHUP | POLLERR))
             {
+                Game *current_room = search_room_by_fd(rooms, &(ufds[i].fd));
+                current_room->status = DISCONNECTED;
+                rooms = delete_room(*current_room, rooms);
+
+                if (current_room->first_player.socket_fd == ufds[i].fd)
+                {
+                    if (send(current_room->second_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
+                    {
+                        fprintf(stderr, "[-]%s\n", strerror(errno));
+                    }
+                }
+                else
+                {
+                    if (send(current_room->first_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
+                    {
+                        fprintf(stderr, "[-]%s\n", strerror(errno));
+                    }
+                }
+
                 close(ufds[i].fd);
                 ufds[i].fd = -1;
                 printf("[-]Client disconnected\n");
@@ -212,8 +234,11 @@ int main(int argc, char *argv[])
                     printf("[+]Client trying to find player.\n");
                     if (find_player(ufds[i].fd, &in_waiting_game, acc, message.account))
                     {
-                        printf("[+]Clear waiting_game\n");
+                        rooms = add_room(in_waiting_game, rooms);
+                        print_rooms(rooms);
+
                         bzero(&in_waiting_game, sizeof(struct _game));
+                        printf("[+]Clear waiting_game\n");
                         in_waiting_game.status = -1;
                     }
                     break;
