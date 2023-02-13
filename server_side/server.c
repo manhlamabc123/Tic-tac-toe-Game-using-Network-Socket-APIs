@@ -258,7 +258,12 @@ int main(int argc, char *argv[])
                     break;
                 case PLAYER_MADE_MOVE:
                     printf("[+]Player made a move.\n");
-                    player_vs_player(ufds[i].fd, message.game);
+
+                    Game *searched_room = search_room_by_fd(rooms, &(ufds[i].fd));
+                    if (searched_room != NULL)
+                    {
+                        player_vs_player(ufds[i].fd, message.game);
+                    }
                     break;
                 case TIME_OUT:
                     printf("[+]Someone timed-out\n");
