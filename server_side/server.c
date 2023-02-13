@@ -260,6 +260,44 @@ int main(int argc, char *argv[])
                     printf("[+]Player made a move.\n");
                     player_vs_player(ufds[i].fd, message.game);
                     break;
+                case TIME_OUT:
+                    printf("[+]Someone timed-out\n");
+
+                    Game *current_room = search_room_by_fd(rooms, &(ufds[i].fd));
+
+                    if (current_room != NULL)
+                    {
+                        print_game(current_room);
+                        current_room->status = DISCONNECTED;
+
+                        message.header = ERROR;
+                        message.game = *current_room;
+
+                        if (current_room->first_player.socket_fd == ufds[i].fd)
+                        {
+                            if (send(current_room->second_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
+                            {
+                                fprintf(stderr, "[-]%s\n", strerror(errno));
+                            }
+                        }
+                        else
+                        {
+                            if (send(current_room->first_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
+                            {
+                                fprintf(stderr, "[-]%s\n", strerror(errno));
+                            }
+                        }
+
+                        rooms = delete_room(*current_room, rooms);
+                        print_rooms(rooms);
+                    }
+                    else
+                    {
+                        bzero(&in_waiting_game, sizeof(struct _game));
+                        printf("[+]Clear waiting_game\n");
+                        in_waiting_game.status = -1;
+                    }
+                    break;
                 default:
                     printf("[-]Server don't understand this signal: %d\n", message.header);
                     close(ufds[i].fd);

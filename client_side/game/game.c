@@ -198,6 +198,7 @@ void find_player(int socket_fd, Account *current_user)
     fd_set read;
     struct timeval tv;
     int ready;
+    Game game;
 
     // Create message
     message.header = FIND_PLAYER;
@@ -221,6 +222,19 @@ void find_player(int socket_fd, Account *current_user)
     if (ready == 0)
     {
         printf("[+]Time out\n");
+
+        message.header = TIME_OUT;
+        game.status = DISCONNECTED;
+        message.game = game;
+
+        // Send message to Server
+        if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+
+        return;
     }
 
     if (FD_ISSET(socket_fd, &read))
@@ -344,6 +358,18 @@ void play_with_player(int socket_fd, Account current_user, Game game)
         if (ready == 0)
         {
             printf("[+]Time out\n");
+
+            message.header = TIME_OUT;
+            message.game.status = DISCONNECTED;
+
+            // Send message to Server
+            if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
+            }
+
+            return;
         }
 
         if (FD_ISSET(socket_fd, &read))
