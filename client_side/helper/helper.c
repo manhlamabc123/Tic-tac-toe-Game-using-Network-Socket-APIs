@@ -12,7 +12,7 @@
 
 int menu()
 {
-    // system("clear");
+    printf("\n");
 
     char user_choice[BUFFER_SIZE];
     int choice;
@@ -52,6 +52,8 @@ char welcome()
 {
     char user_choice[BUFFER_SIZE];
     int choice;
+
+	printf("\n");
 
     printf("[+]Welcome\n");
     printf("[+]1. Sign in\n");

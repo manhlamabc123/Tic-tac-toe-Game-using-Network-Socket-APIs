@@ -13,7 +13,6 @@
 
 void client_app(int socket_fd)
 {
-	// Clear scene
 	system("clear");
 
 	// Variables

@@ -221,7 +221,7 @@ void find_player(int socket_fd, Account *current_user)
 
     if (ready == 0)
     {
-        printf("[+]Time out\n");
+        printf("[+]Time out. Found nobody\n");
 
         message.header = TIME_OUT;
         game.status = DISCONNECTED;
@@ -357,7 +357,8 @@ void play_with_player(int socket_fd, Account current_user, Game game)
 
         if (ready == 0)
         {
-            printf("[+]Time out\n");
+            printf("[-]Opponent disconnected\n");
+            printf("[+]Game's record will not be saved\n");
 
             message.header = TIME_OUT;
             message.game.status = DISCONNECTED;
