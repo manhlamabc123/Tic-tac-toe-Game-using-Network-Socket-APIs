@@ -195,6 +195,9 @@ void play_with_bot(int socket_fd, Account current_user)
 void find_player(int socket_fd, Account *current_user)
 {
     Message message;
+    fd_set read;
+    struct timeval tv;
+    int ready;
 
     // Create message
     message.header = FIND_PLAYER;
@@ -209,24 +212,38 @@ void find_player(int socket_fd, Account *current_user)
 
     printf("[+]Finding other player...\n");
 
-    // Recv game from Server
-    if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
+    tv.tv_sec = 10;
+    tv.tv_usec = 0;
+    FD_ZERO(&read);
+    FD_SET(socket_fd, &read);
+    ready = select(FD_SETSIZE, &read, NULL, NULL, &tv);
+
+    if (ready == 0)
     {
-        fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
+        printf("[+]Time out\n");
     }
 
-    // Handling message
-    switch (message.header)
+    if (FD_ISSET(socket_fd, &read))
     {
-    case OK:
-        break;
-    default:
-        printf("[-]Disconnected from the server\n");
-        return;
-    }
+        // Recv game from Server
+        if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
 
-    play_with_player(socket_fd, *current_user, message.game);
+        // Handling message
+        switch (message.header)
+        {
+        case OK:
+            break;
+        default:
+            printf("[-]Disconnected from the server\n");
+            return;
+        }
+
+        play_with_player(socket_fd, *current_user, message.game);
+    }
 
     return;
 }
@@ -248,6 +265,9 @@ void play_with_player(int socket_fd, Account current_user, Game game)
     Move next_move;
     int second_player_wait = 1;
     Message message;
+    fd_set read;
+    struct timeval tv;
+    int ready;
 
     while (1)
     {
@@ -315,29 +335,43 @@ void play_with_player(int socket_fd, Account current_user, Game game)
     wait:
         printf("[+]Waiting for opponent...\n");
 
-        // Recv feedback from Server
-        if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
+        tv.tv_sec = 10;
+        tv.tv_usec = 0;
+        FD_ZERO(&read);
+        FD_SET(socket_fd, &read);
+        ready = select(FD_SETSIZE, &read, NULL, NULL, &tv);
+
+        if (ready == 0)
         {
-            fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            printf("[+]Time out\n");
         }
 
-        // Handling feedback
-        switch (message.header)
+        if (FD_ISSET(socket_fd, &read))
         {
-        case OK:
-            game = message.game;
-            break;
-        case ERROR:
-            if (message.game.status == DISCONNECTED)
+            // Recv feedback from Server
+            if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
             {
-                printf("[-]Opponent disconnected\n");
-                printf("[+]Game's record will not be saved\n");
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
             }
-            return;
-        default:
-            printf("[-]Disconnected from the server\n");
-            return;
+
+            // Handling feedback
+            switch (message.header)
+            {
+            case OK:
+                game = message.game;
+                break;
+            case ERROR:
+                if (message.game.status == DISCONNECTED)
+                {
+                    printf("[-]Opponent disconnected\n");
+                    printf("[+]Game's record will not be saved\n");
+                }
+                return;
+            default:
+                printf("[-]Disconnected from the server\n");
+                return;
+            }
         }
     }
 }
