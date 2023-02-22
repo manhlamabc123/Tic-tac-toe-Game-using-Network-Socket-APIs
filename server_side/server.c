@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
         // Call poll()
         printf("[+]Socket count: %d\n", socket_count);
         printf("[+]Poll is blocking...\n");
-        if ((ready = poll(ufds, socket_count, 10000)) == -1)
+        if ((ready = poll(ufds, socket_count, 10000000)) == -1)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return 0;
