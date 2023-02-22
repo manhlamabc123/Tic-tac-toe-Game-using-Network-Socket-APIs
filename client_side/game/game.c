@@ -116,6 +116,8 @@ void play_with_bot(int socket_fd, Account current_user)
 
     // Get first player
     game.first_player = current_user;
+    strcpy(game.second_player.username, "bot");
+
 
     // Set game variables
     game.status = PROCESS;
@@ -170,7 +172,7 @@ void play_with_bot(int socket_fd, Account current_user)
             return;
         }
 
-        print_board(game.board.board, current_user);
+        print_board(game.board.board, current_user, game.second_player);
         printf("[+]Waiting for opponent...\n");
 
         // Recv feedback from Server
@@ -287,7 +289,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
     while (1)
     {
         // Print board
-        print_board(game.board.board, current_user);
+        print_board(game.board.board, current_user, game.second_player);
 
         // Check game status
         switch (game.status)
@@ -346,7 +348,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
             return;
         }
 
-        print_board(game.board.board, current_user);
+        print_board(game.board.board, current_user, game.second_player);
     wait:
         printf("[+]Waiting for opponent...\n");
 
