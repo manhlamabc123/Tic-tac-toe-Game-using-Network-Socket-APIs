@@ -213,7 +213,7 @@ void find_player(int socket_fd, Account *current_user)
 
     printf("[+]Finding other player...\n");
 
-    tv.tv_sec = 10;
+    tv.tv_sec = 30;
     tv.tv_usec = 0;
     FD_ZERO(&read);
     FD_SET(socket_fd, &read);
@@ -349,7 +349,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
     wait:
         printf("[+]Waiting for opponent...\n");
 
-        tv.tv_sec = 10;
+        tv.tv_sec = 180;
         tv.tv_usec = 0;
         FD_ZERO(&read);
         FD_SET(socket_fd, &read);
