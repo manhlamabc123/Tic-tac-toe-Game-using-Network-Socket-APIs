@@ -27,13 +27,13 @@ void initialise_board(int *board)
     }
 }
 
-void print_board(const int *board, Account current_user, Account second_player)
+void print_board(const int *board, Account first_player, Account second_player)
 {
     int i = 0;
     char pceChars[] = "OX|-";
     system("clear");
-    printf("[+]You: %s\n", current_user.username);
-    printf("[+]Opponent: %s\n", second_player.username);
+    printf("[+]First player: %s\n", first_player.username);
+    printf("[+]Second player: %s\n", second_player.username);
     printf("[+]Board:\n");
     for (i = 0; i < 9; ++i)
     {
@@ -130,7 +130,7 @@ void play_with_bot(int socket_fd, Account current_user)
     while (1)
     {
         // Print board
-        print_board(game.board.board, current_user, game.second_player);
+        print_board(game.board.board, game.first_player, game.second_player);
 
         // Check game status
         switch (game.status)
@@ -172,7 +172,7 @@ void play_with_bot(int socket_fd, Account current_user)
             return;
         }
 
-        print_board(game.board.board, current_user, game.second_player);
+        print_board(game.board.board, game.first_player, game.second_player);
         printf("[+]Waiting for opponent...\n");
 
         // Recv feedback from Server
@@ -289,7 +289,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
     while (1)
     {
         // Print board
-        print_board(game.board.board, current_user, game.second_player);
+        print_board(game.board.board, game.first_player, game.second_player);
 
         // Check game status
         switch (game.status)
@@ -348,7 +348,7 @@ void play_with_player(int socket_fd, Account current_user, Game game)
             return;
         }
 
-        print_board(game.board.board, current_user, game.second_player);
+        print_board(game.board.board, game.first_player, game.second_player);
     wait:
         printf("[+]Waiting for opponent...\n");
 
