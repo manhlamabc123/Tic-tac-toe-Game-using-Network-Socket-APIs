@@ -27,12 +27,13 @@ void initialise_board(int *board)
     }
 }
 
-void print_board(const int *board, Account current_user)
+void print_board(const int *board, Account current_user, Account second_player)
 {
     int i = 0;
     char pceChars[] = "OX|-";
-    // system("clear");
+    system("clear");
     printf("[+]You: %s\n", current_user.username);
+    printf("[+]Opponent: %s\n", second_player.username);
     printf("[+]Board:\n");
     for (i = 0; i < 9; ++i)
     {
@@ -127,7 +128,7 @@ void play_with_bot(int socket_fd, Account current_user)
     while (1)
     {
         // Print board
-        print_board(game.board.board, current_user);
+        print_board(game.board.board, current_user, game.second_player);
 
         // Check game status
         switch (game.status)
