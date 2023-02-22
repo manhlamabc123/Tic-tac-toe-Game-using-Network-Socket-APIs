@@ -423,7 +423,7 @@ int find_player(int client_fd, Game *in_waiting_game, Account *acc, Account curr
     return 0;
 }
 
-void player_vs_player(int client_fd, Game game)
+int player_vs_player(int client_fd, Game game)
 {
     int side;
     Message message;
@@ -462,12 +462,12 @@ void player_vs_player(int client_fd, Game game)
         if (send(game.first_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            return 0;
         }
         if (send(game.second_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            return 0;
         }
 
         // Save game to database
@@ -476,19 +476,19 @@ void player_vs_player(int client_fd, Game game)
         if (connect == NULL)
         {
             printf("[-]Fail to connect to database\n");
-            return;
+            return 0;
         }
 
         // Update database
         if (database_add_new_game(connect, game) == 0)
         {
             printf("[-]Fail to update database\n");
-            return;
+            return 0;
         }
 
         // Close connection
         mysql_close(connect);
-        return;
+        return 2;
     }
 
     // Send game to Client
@@ -497,7 +497,7 @@ void player_vs_player(int client_fd, Game game)
         if (send(game.second_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            return 0;
         }
     }
     else
@@ -505,9 +505,9 @@ void player_vs_player(int client_fd, Game game)
         if (send(game.first_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            return 0;
         }
     }
 
-    return;
+    return 1;
 }

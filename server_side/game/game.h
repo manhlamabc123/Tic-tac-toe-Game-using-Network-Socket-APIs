@@ -13,4 +13,4 @@ void server_game_bot(int, Game);
 int get_side(Game);
 int find_player(int, Game*, Account*, Account);
 int initialise_game(Game*, Account*, Account);
-void player_vs_player(int, Game);
+int player_vs_player(int, Game);
