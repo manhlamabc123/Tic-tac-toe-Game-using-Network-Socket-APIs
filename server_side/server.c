@@ -105,12 +105,18 @@ int main(int argc, char *argv[])
         // Call poll()
         printf("[+]Socket count: %d\n", socket_count);
         printf("[+]Poll is blocking...\n");
-        if ((ready = poll(ufds, socket_count, -1)) == -1)
+        if ((ready = poll(ufds, socket_count, 10000)) == -1)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return 0;
         }
         printf("[+]Ready: %d\n", ready);
+
+        if (ready == 0)
+        {
+            printf("[+]Exit program\n");
+            return 0;
+        }
 
         // Handling returned ufds
         if (ufds[0].revents & POLLIN)
