@@ -277,27 +277,6 @@ int main(int argc, char *argv[])
 
                         if (current_room != NULL)
                         {
-                            print_game(current_room);
-                            current_room->status = DISCONNECTED;
-
-                            message.header = ERROR;
-                            message.game = *current_room;
-
-                            if (current_room->first_player.socket_fd == ufds[i].fd)
-                            {
-                                if (send(current_room->second_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
-                                {
-                                    fprintf(stderr, "[-]%s\n", strerror(errno));
-                                }
-                            }
-                            else
-                            {
-                                if (send(current_room->first_player.socket_fd, &message, sizeof(struct _message), 0) < 0)
-                                {
-                                    fprintf(stderr, "[-]%s\n", strerror(errno));
-                                }
-                            }
-
                             rooms = delete_room(*current_room, rooms);
                             print_rooms(rooms);
                         }
