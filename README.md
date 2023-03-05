@@ -1,4 +1,4 @@
-# Game: Tic-tac-toe for multiplayer
+# Game: Tic-tac-toe using Network Socket APIs
 
 <details>
   <summary>Table of Contents</summary>
