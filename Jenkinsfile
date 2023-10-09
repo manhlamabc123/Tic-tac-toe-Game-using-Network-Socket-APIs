@@ -7,5 +7,11 @@ pipeline {
       }
     }
 
+    stage('install DefectGuard') {
+      steps {
+        sh 'pip install -i https://test.pypi.org/simple/ defectguard'
+      }
+    }
+
   }
 }
