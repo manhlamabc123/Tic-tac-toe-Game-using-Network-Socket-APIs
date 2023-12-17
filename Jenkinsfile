@@ -9,11 +9,7 @@ pipeline {
 
     stage('Run DefectGuard') {
       steps {
-        sh 'ls -a'
-        sh 'pwd'
-        sh '. /.venv/bin/activate'
-        sh 'pip list'
-        sh 'defectguard -models deepjit -dataset platform -repo .   -uncommit -top 9 -main_language C -sort'
+        sh '. /.venv/bin/activate && pip show defectguard'
       }
     }
 
