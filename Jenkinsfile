@@ -12,6 +12,7 @@ pipeline {
         sh 'ls -a'
         sh 'pwd'
         sh '. /.venv/bin/activate'
+        sh 'pip show defectguard'
         sh 'defectguard -models deepjit -dataset platform -repo .   -uncommit -top 9 -main_language C -sort'
       }
     }
