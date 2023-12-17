@@ -9,6 +9,8 @@ pipeline {
 
     stage('Run DefectGuard') {
       steps {
+        sh 'ls -a'
+        sh 'pwd'
         sh '. .venv/bin/activate'
         sh 'defectguard -models deepjit -dataset platform -repo Tic-tac-toe-Game-using-Network-Socket-APIs   -uncommit -top 9 -main_language C -sort'
       }
